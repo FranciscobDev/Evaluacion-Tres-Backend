@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+
+{% block title %}Comprobante de Cita #{{ cita.id }} | CheckDent{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div>
+                <h1 class="h3 fw-bold mb-1">
+                    <i class="bi bi-file-earmark-medical text-info me-2"></i>Comprobante de Cita Odontológica
+                </h1>
+                <p class="text-secondary small mb-0">Código Único de Atención: <strong>#CITA-{{ cita.id }}-2026</strong></p>
+            </div>
+            <div class="d-flex gap-2">
+                <button onclick="window.print()" class="btn btn-outline-dark btn-sm">
+                    <i class="bi bi-printer me-1"></i>Imprimir Ficha
+                </button>
+                <a href="{% url 'citas:panel_recepcion' %}" class="btn btn-info fw-bold text-dark btn-sm">
+                    <i class="bi bi-clipboard2-pulse me-1"></i>Volver al Panel
+                </a>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden bg-white mb-4">
+            <div class="bg-dark text-white p-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h5 class="fw-bold mb-0 text-info">Clínica Odontológica CheckDent</h5>
+                    <small class="text-light opacity-75">Agendado por: {{ cita.recepcionista.get_full_name|default:cita.recepcionista.username }} el {{ cita.fecha_creacion|date:"d/m/Y H:i" }}</small>
+                </div>
+                <div>
+                    {% if cita.estado == 'agendada' %}
+                        <span class="badge bg-primary px-3 py-2 fs-6">Agendada</span>
+                    {% elif cita.estado == 'confirmada' %}
+                        <span class="badge bg-info text-dark px-3 py-2 fs-6">Confirmada</span>
+                    {% elif cita.estado == 'realizada' %}
+                        <span class="badge bg-success px-3 py-2 fs-6">Atendida</span>
+                    {% elif cita.estado == 'cancelada' %}
+                        <span class="badge bg-danger px-3 py-2 fs-6">Cancelada</span>
+                    {% else %}
+                        <span class="badge bg-secondary px-3 py-2 fs-6">{{ cita.get_estado_display }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card-body p-4 p-md-5">
+                <!-- Información del Horario -->
+                <div class="p-3 bg-light rounded-3 border mb-4">
+                    <div class="row text-center text-md-start gy-3">
+                        <div class="col-md-4">
+                            <span class="text-secondary small d-block">Fecha de Atención:</span>
+                            <strong class="fs-6 text-dark">{{ cita.bloque.fecha|date:"l, d \d\e F \d\e Y" }}</strong>
+                        </div>
+                        <div class="col-md-4">
+                            <span class="text-secondary small d-block">Horario:</span>
+                            <strong class="fs-6 text-primary">{{ cita.bloque.hora_inicio|time:"H:i" }} - {{ cita.bloque.hora_fin|time:"H:i" }}</strong>
+                        </div>
+                        <div class="col-md-4">
+                            <span class="text-secondary small d-block">Lugar / Sillón:</span>
+                            <strong class="fs-6 text-dark">{{ cita.bloque.box_atencion }}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <!-- Datos del Paciente -->
+                    <div class="col-md-6">
+                        <h6 class="fw-bold text-secondary border-bottom pb-2">
+                            <i class="bi bi-person me-1 text-info"></i>Datos del Paciente
+                        </h6>
+                        <ul class="list-unstyled small mb-0 lh-lg">
+                            <li><strong>Nombre:</strong> {{ cita.paciente.nombre_completo }}</li>
+                            <li><strong>RUT / DNI:</strong> {{ cita.paciente.rut }}</li>
+                            <li><strong>Teléfono / WhatsApp:</strong> {{ cita.paciente.telefono }}</li>
+                            <li><strong>Correo:</strong> {{ cita.paciente.email|default:"No informado" }}</li>
+                            <li><strong>Previsión:</strong> {{ cita.paciente.get_prevision_display }}</li>
+                            {% if cita.paciente.alergias_antecedentes %}
+                                <li class="text-danger"><strong>Antecedentes:</strong> {{ cita.paciente.alergias_antecedentes }}</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+
+                    <!-- Datos del Odontólogo -->
+                    <div class="col-md-6">
+                        <h6 class="fw-bold text-secondary border-bottom pb-2">
+                            <i class="bi bi-award me-1 text-info"></i>Odontólogo Tratante
+                        </h6>
+                        <ul class="list-unstyled small mb-0 lh-lg">
+                            <li><strong>Profesional:</strong> Dr(a). {{ cita.bloque.dentista.get_full_name|default:cita.bloque.dentista.username }}</li>
+                            <li><strong>Especialidad:</strong> {{ cita.bloque.dentista.perfil.get_especialidad_display }}</li>
+                            <li><strong>Registro Salud:</strong> {{ cita.bloque.dentista.perfil.registro_salud|default:"Activo" }}</li>
+                            <li><strong>Contacto Médico:</strong> {{ cita.bloque.dentista.email }}</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Motivo y Notas -->
+                <div class="border rounded-3 p-3 bg-white mb-4">
+                    <h6 class="fw-bold text-dark mb-1">
+                        <i class="bi bi-chat-quote text-info me-1"></i>Motivo de Consulta:
+                    </h6>
+                    <p class="text-secondary small mb-0">{{ cita.motivo_consulta }}</p>
+                </div>
+
+                {% if cita.notas_clinicas %}
+                <div class="border border-warning-subtle rounded-3 p-3 bg-warning-subtle mb-4">
+                    <h6 class="fw-bold text-dark mb-1">
+                        <i class="bi bi-journal-medical text-warning me-1"></i>Notas y Diagnóstico Clínico del Odontólogo:
+                    </h6>
+                    <p class="text-dark small mb-0" style="white-space: pre-line;">{{ cita.notas_clinicas }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Acciones Rápidas para Recepción -->
+                <div class="border-top pt-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            Cambiar Estado: <strong>{{ cita.get_estado_display }}</strong>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <form method="post" action="{% url 'citas:cambiar_estado_cita' cita.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="nuevo_estado" value="confirmada">
+                                    <button class="dropdown-item" type="submit">
+                                        <i class="bi bi-check-circle text-info me-2"></i>Marcar como Confirmada
+                                    </button>
+                                </form>
+                            </li>
+                            <li>
+                                <form method="post" action="{% url 'citas:cambiar_estado_cita' cita.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="nuevo_estado" value="en_atencion">
+                                    <button class="dropdown-item" type="submit">
+                                        <i class="bi bi-door-open text-warning me-2"></i>Marcar En Atención (Pasó a Box)
+                                    </button>
+                                </form>
+                            </li>
+                            <li>
+                                <form method="post" action="{% url 'citas:cambiar_estado_cita' cita.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="nuevo_estado" value="realizada">
+                                    <button class="dropdown-item" type="submit">
+                                        <i class="bi bi-check2-all text-success me-2"></i>Marcar Atendida / Realizada
+                                    </button>
+                                </form>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="post" action="{% url 'citas:cambiar_estado_cita' cita.id %}" onsubmit="return confirm('¿Seguro que deseas cancelar esta cita? La hora volverá a quedar disponible en la parrilla.');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="nuevo_estado" value="cancelada">
+                                    <button class="dropdown-item text-danger" type="submit">
+                                        <i class="bi bi-x-circle me-2"></i>Cancelar Cita (Liberar Hora)
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <a href="{% url 'citas:panel_recepcion' %}" class="btn btn-outline-dark btn-sm">
+                        <i class="bi bi-arrow-left me-1"></i>Volver a Citas
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
