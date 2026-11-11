@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Iniciar Sesión | CheckDent{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-md-7 col-lg-5">
+        <div class="card shadow border-0 rounded-4 overflow-hidden bg-white">
+            <div class="bg-dark text-white p-4 text-center">
+                <div class="d-inline-flex p-3 rounded-circle bg-info bg-opacity-25 mb-2">
+                    <i class="bi bi-hospital fs-1 text-info"></i>
+                </div>
+                <h3 class="fw-bold mb-1">CheckDent</h3>
+                <p class="text-light opacity-75 small mb-0">Portal de Acceso Clínico y Pacientes</p>
+            </div>
+
+            <div class="card-body p-4 p-md-5">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ next }}">
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger py-2 small mb-3">
+                            {% for error in form.non_field_errors %}
+                                <div><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="form-label fw-semibold text-secondary">
+                            <i class="bi bi-person me-1"></i>Nombre de Usuario
+                        </label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="text-danger small mt-1">{{ form.username.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="{{ form.password.id_for_label }}" class="form-label fw-semibold text-secondary">
+                            <i class="bi bi-key me-1"></i>Contraseña
+                        </label>
+                        {{ form.password }}
+                        {% if form.password.errors %}
+                            <div class="text-danger small mt-1">{{ form.password.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Ingresar al Sistema
+                        </button>
+                    </div>
+                </form>
+
+                <div class="text-center small mb-3">
+                    ¿No tienes cuenta? <a href="{% url 'usuarios:registro' %}" class="fw-bold text-decoration-none">Regístrate aquí</a>
+                </div>
+
+                <!-- Tarjeta informativa de credenciales demo -->
+                <div class="mt-3 p-3 bg-light rounded-3 border">
+                    <h6 class="fw-bold small text-dark mb-2">
+                        <i class="bi bi-info-circle-fill text-info me-1"></i>Cuentas de Prueba Disponibles:
+                    </h6>
+                    <div class="small text-secondary">
+                        <div class="mb-1">
+                            <span class="badge bg-danger">Admin (Staff CRUD):</span>
+                            <code>admin</code> / Clave: <code>admin123</code>
+                        </div>
+                        <div class="mb-1">
+                            <span class="badge bg-warning text-dark">Dentista:</span>
+                            <code>dr.roberto</code> o <code>dra.camila</code> / Clave: <code>dentista123</code>
+                        </div>
+                        <div class="mb-1">
+                            <span class="badge bg-info text-dark">Recepción:</span>
+                            <code>carla.recepcion</code> / Clave: <code>recepcion123</code>
+                        </div>
+                        <div>
+                            <span class="badge bg-secondary">Estándar:</span>
+                            <code>paciente.demo</code> / Clave: <code>paciente123</code>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
