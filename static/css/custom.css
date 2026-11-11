@@ -17,8 +17,8 @@ body {
 }
 
 .navbar-checkdent {
-    background-color: var(--dent-dark) !important;
-    border-bottom: 2px solid #1e293b;
+    background-color: #0f172a !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .navbar-brand-checkdent {
@@ -29,6 +29,61 @@ body {
 
 .navbar-brand-checkdent:hover {
     transform: scale(1.02);
+}
+
+.navbar-checkdent .navbar-nav .nav-link {
+    color: rgba(241, 245, 249, 0.82) !important;
+    font-weight: 500;
+    font-size: 0.9rem;
+    padding: 0.45rem 0.85rem !important;
+    border-radius: 50rem;
+    transition: all 0.2s ease-in-out;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.navbar-checkdent .navbar-nav .nav-link:hover {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.navbar-checkdent .navbar-nav .nav-link i {
+    font-size: 1rem;
+    opacity: 0.85;
+}
+
+.navbar-user-btn {
+    background-color: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #f1f5f9 !important;
+    border-radius: 50rem;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.875rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.navbar-user-btn:hover,
+.navbar-user-btn:focus,
+.navbar-user-btn[aria-expanded="true"] {
+    background-color: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: #ffffff !important;
+}
+
+.btn-nav-action {
+    border-radius: 50rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 0.38rem 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-nav-action:hover {
+    transform: translateY(-1px);
 }
 
 .nav-link {
@@ -50,13 +105,6 @@ body {
     border-bottom: 1px solid var(--dent-border);
 }
 
-.tratamiento-img-cover {
-    height: 190px;
-    object-fit: cover;
-    width: 100%;
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-}
-
 .table thead th {
     font-size: 0.825rem;
     text-transform: uppercase;
@@ -72,15 +120,22 @@ body {
 }
 
 @media print {
-    nav, footer, .btn, .dropdown, .alert, .no-print {
+
+    nav,
+    footer,
+    .btn,
+    .dropdown,
+    .alert,
+    .no-print {
         display: none !important;
     }
+
     body {
         background-color: #ffffff !important;
     }
+
     .card {
         border: 1px solid #000000 !important;
         box-shadow: none !important;
     }
 }
-

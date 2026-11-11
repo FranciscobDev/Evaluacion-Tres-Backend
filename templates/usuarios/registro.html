@@ -1,73 +1,76 @@
 {% extends 'base.html' %}
 
-{% block title %}Registro de Usuario | CheckDent{% endblock %}
+{% block title %}Alta de Funcionario Clínico | CheckDent{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-9 col-lg-7">
-        <div class="card shadow border-0 rounded-4 overflow-hidden bg-white my-3">
-            <div class="bg-dark text-white p-4 text-center">
-                <h3 class="fw-bold mb-1"><i class="bi bi-person-plus-fill text-info me-2"></i>Crear Cuenta en CheckDent</h3>
-                <p class="text-light opacity-75 small mb-0">Regístrate para cotizar tratamientos odontológicos y gestionar tus solicitudes</p>
-            </div>
-            <div class="card-body p-4 p-md-5">
-                <form method="post" novalidate>
-                    {% csrf_token %}
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold text-secondary">Nombre de Usuario</label>
-                            {{ form.username }}
-                            {% if form.username.errors %}<div class="text-danger small mt-1">{{ form.username.errors }}</div>{% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold text-secondary">RUT (Módulo 11)</label>
-                            {{ form.rut }}
-                            {% if form.rut.errors %}<div class="text-danger small mt-1">{{ form.rut.errors }}</div>{% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold text-secondary">Nombres</label>
-                            {{ form.first_name }}
-                            {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors }}</div>{% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold text-secondary">Apellidos</label>
-                            {{ form.last_name }}
-                            {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors }}</div>{% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold text-secondary">Correo Electrónico</label>
-                            {{ form.email }}
-                            {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors }}</div>{% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold text-secondary">Teléfono / WhatsApp</label>
-                            {{ form.telefono }}
-                            {% if form.telefono.errors %}<div class="text-danger small mt-1">{{ form.telefono.errors }}</div>{% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold text-secondary">Contraseña</label>
-                            {{ form.password1 }}
-                            {% if form.password1.errors %}<div class="text-danger small mt-1">{{ form.password1.errors }}</div>{% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold text-secondary">Confirmar Contraseña</label>
-                            {{ form.password2 }}
-                            {% if form.password2.errors %}<div class="text-danger small mt-1">{{ form.password2.errors }}</div>{% endif %}
-                        </div>
-                    </div>
+    <div class="col-lg-7">
+        <div class="card border shadow-sm rounded-3 bg-white p-4">
+            <h4 class="fw-bold text-dark mb-1">Alta de Personal Clínico</h4>
+            <p class="text-secondary small mb-4">Uso exclusivo de Administración para registrar un nuevo Odontólogo o Recepcionista.</p>
 
-                    <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-info btn-lg fw-bold text-dark shadow-sm">
-                            <i class="bi bi-check2-circle me-2"></i>Completar Registro
-                        </button>
+            <form method="post" autocomplete="off">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">{{ form.username.label }}</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                        <div class="text-danger small">{{ form.username.errors }}</div>
+                        {% endif %}
                     </div>
-                </form>
-                <div class="text-center small mt-3">
-                    ¿Ya tienes una cuenta? <a href="{% url 'usuarios:login' %}" class="fw-bold text-decoration-none">Inicia sesión aquí</a>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">{{ form.rut.label }}</label>
+                        {{ form.rut }}
+                        {% if form.rut.errors %}
+                        <div class="text-danger small">{{ form.rut.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">{{ form.first_name.label }}</label>
+                        {{ form.first_name }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">{{ form.last_name.label }}</label>
+                        {{ form.last_name }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">{{ form.email.label }}</label>
+                        {{ form.email }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">{{ form.telefono.label }}</label>
+                        {{ form.telefono }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">{{ form.rol.label }}</label>
+                        {{ form.rol }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">{{ form.especialidad.label }}</label>
+                        {{ form.especialidad }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Contraseña</label>
+                        {{ form.password1 }}
+                        {% if form.password1.errors %}
+                        <div class="text-danger small">{{ form.password1.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Confirmar Contraseña</label>
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}
+                        <div class="text-danger small">{{ form.password2.errors }}</div>
+                        {% endif %}
+                    </div>
                 </div>
-            </div>
+                <div class="mt-4 d-flex justify-content-end gap-2">
+                    <a href="{% url 'core:inicio' %}" class="btn btn-outline-secondary btn-sm">Cancelar</a>
+                    <button type="submit" class="btn btn-primary btn-sm px-4 fw-semibold">Guardar Funcionario</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 {% endblock %}
-

@@ -1,24 +1,20 @@
 {% extends 'base.html' %}
 
-{% block title %}Mi Presupuesto Dental en Sesión | CheckDent{% endblock %}
+{% block title %}Cotizador Clínico en Sesión | CheckDent{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
     <div>
-        <h1 class="h3 fw-bold mb-1">
-            <i class="bi bi-calculator text-info me-2"></i>Cotizador y Plan de Presupuesto Dental
-        </h1>
-        <p class="text-secondary small mb-0">
-            Colección transitoria almacenada en <code>request.session</code>. Ajusta las sesiones o piezas antes de emitir tu solicitud.
-        </p>
+        <h1 class="h3 fw-bold text-dark mb-1">Cotizador de Tratamientos (Sesión)</h1>
+        <p class="text-secondary small mb-0">Planificador de prestaciones dentales para enviar presupuesto al paciente.</p>
     </div>
     <div class="d-flex gap-2">
-        <a href="{% url 'core:servicios' %}" class="btn btn-outline-primary btn-sm">
-            <i class="bi bi-plus-lg me-1"></i>Agregar Más Tratamientos
+        <a href="{% url 'core:servicios' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Ir al Catálogo
         </a>
         {% if items_presupuesto %}
         <a href="{% url 'core:vaciar_presupuesto' %}" class="btn btn-outline-danger btn-sm">
-            <i class="bi bi-trash me-1"></i>Vaciar Presupuesto
+            <i class="bi bi-trash me-1"></i>Vaciar
         </a>
         {% endif %}
     </div>
@@ -27,41 +23,39 @@
 {% if items_presupuesto %}
 <div class="row g-4">
     <div class="col-lg-8">
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+        <div class="card border shadow-sm rounded-3 bg-white overflow-hidden">
             <div class="table-responsive">
                 <table class="table align-middle mb-0">
                     <thead class="table-light">
                         <tr>
                             <th>Tratamiento</th>
                             <th>Arancel Unitario</th>
-                            <th style="width: 170px;">Sesiones / Piezas</th>
+                            <th style="width: 150px;">Sesiones / Piezas</th>
                             <th>Subtotal</th>
-                            <th class="text-end">Quitar</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for item in items_presupuesto %}
                         <tr>
                             <td>
-                                <a href="{% url 'core:detalle_tratamiento' item.slug %}" class="fw-bold text-dark text-decoration-none">
-                                    {{ item.nombre }}
-                                </a>
-                                <div class="small text-secondary"><code>{{ item.codigo }}</code> | {{ item.especialidad }}</div>
+                                <div class="fw-bold text-dark">{{ item.nombre }}</div>
+                                <small class="text-muted">{{ item.especialidad }}</small>
                             </td>
                             <td>${{ item.arancel }} CLP</td>
                             <td>
                                 <form method="post" action="{% url 'core:actualizar_item_presupuesto' item.id %}" class="d-flex gap-1">
                                     {% csrf_token %}
-                                    <input type="number" name="sesiones" value="{{ item.sesiones }}" min="1" max="{{ item.cupos_max }}" class="form-control form-control-sm">
-                                    <button type="submit" class="btn btn-sm btn-outline-dark" title="Actualizar cantidad">
-                                        <i class="bi bi-arrow-repeat"></i>
+                                    <input type="number" name="sesiones" value="{{ item.sesiones }}" min="1" max="{{ item.cupos_max }}" class="form-control form-control-sm" style="width: 70px;">
+                                    <button type="submit" class="btn btn-outline-primary btn-sm" title="Actualizar">
+                                        <i class="bi bi-check2"></i>
                                     </button>
                                 </form>
                             </td>
                             <td class="fw-bold text-primary">${{ item.total_linea }} CLP</td>
                             <td class="text-end">
-                                <a href="{% url 'core:eliminar_item_presupuesto' item.id %}" class="btn btn-sm btn-outline-danger border-0">
-                                    <i class="bi bi-x-circle fs-5"></i>
+                                <a href="{% url 'core:eliminar_item_presupuesto' item.id %}" class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-x-lg"></i>
                                 </a>
                             </td>
                         </tr>
@@ -72,57 +66,45 @@
         </div>
     </div>
 
-    <!-- Desglose Económico y Emisión de Comprobante -->
     <div class="col-lg-4">
-        <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
-            <h5 class="fw-bold border-bottom pb-2 mb-3">Resumen Económico</h5>
+        <div class="card border shadow-sm rounded-3 bg-white p-4">
+            <h5 class="fw-bold text-dark mb-3">Resumen Económico</h5>
             <div class="d-flex justify-content-between mb-2 small">
                 <span class="text-secondary">Subtotal Clínico:</span>
-                <strong>${{ subtotal }} CLP</strong>
+                <span class="fw-semibold">${{ subtotal }} CLP</span>
             </div>
-            <div class="d-flex justify-content-between mb-2 small">
+            <div class="d-flex justify-content-between mb-3 small">
                 <span class="text-secondary">Insumos Bioseguridad (10%):</span>
-                <strong>${{ insumos_esterilizacion }} CLP</strong>
+                <span class="fw-semibold">${{ insumos_esterilizacion }} CLP</span>
             </div>
-            <hr>
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <span class="fw-bold fs-5">Total Estimado:</span>
-                <span class="fw-bold fs-4 text-primary">${{ total_final }} CLP</span>
+            <div class="d-flex justify-content-between border-top pt-3 mb-4">
+                <span class="fw-bold text-dark">Total Estimado:</span>
+                <span class="fw-bold text-primary fs-5">${{ total_final }} CLP</span>
             </div>
 
             <form method="post" action="{% url 'core:confirmar_solicitud_presupuesto' %}">
                 {% csrf_token %}
                 <div class="mb-2">
-                    <label class="form-label small fw-semibold text-secondary mb-1">Nombre del Paciente / Solicitante</label>
-                    <input type="text" name="nombre_solicitante" class="form-control form-control-sm" value="{{ user.get_full_name }}" placeholder="Ej. Juan Pérez" required>
-                </div>
-                <div class="mb-2">
-                    <label class="form-label small fw-semibold text-secondary mb-1">Teléfono de Contacto</label>
-                    <input type="text" name="telefono_solicitante" class="form-control form-control-sm" value="{{ user.perfil.telefono|default:'' }}" placeholder="+56 9 8765 4321" required>
+                    <label class="form-label small fw-semibold">Nombre del Paciente</label>
+                    <input type="text" name="nombre_solicitante" class="form-control form-control-sm" placeholder="Ej. Juan Pérez" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label small fw-semibold text-secondary mb-1">Observaciones (Opcional)</label>
-                    <textarea name="observaciones" class="form-control form-control-sm" rows="2" placeholder="Preferencia de horario o convenio Fonasa/Isapre..."></textarea>
+                    <label class="form-label small fw-semibold">Teléfono / WhatsApp</label>
+                    <input type="text" name="telefono_solicitante" class="form-control form-control-sm" placeholder="+56 9 8765 4321" required>
                 </div>
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-info fw-bold text-dark">
-                        <i class="bi bi-file-earmark-check me-1"></i>Emitir Solicitud de Presupuesto
-                    </button>
-                </div>
+                <button type="submit" class="btn btn-primary w-100 fw-semibold">
+                    <i class="bi bi-file-earmark-check me-1"></i>Emitir Comprobante
+                </button>
             </form>
         </div>
     </div>
 </div>
 {% else %}
-<div class="card border-0 shadow-sm rounded-4 bg-white p-5 text-center">
-    <i class="bi bi-calculator display-3 text-muted mb-3"></i>
-    <h4 class="fw-bold">Tu Presupuesto Dental está vacío</h4>
-    <p class="text-secondary small mb-4">Explora nuestro catálogo de tratamientos odontológicos y selecciona las prestaciones que deseas cotizar.</p>
-    <div>
-        <a href="{% url 'core:servicios' %}" class="btn btn-info fw-bold text-dark px-4">
-            <i class="bi bi-grid-1x2 me-1"></i>Ir al Catálogo de Tratamientos
-        </a>
-    </div>
+<div class="text-center py-5 bg-white border rounded-3 text-secondary">
+    <i class="bi bi-calculator display-6 d-block mb-2 text-muted"></i>
+    <h6 class="fw-bold">No hay tratamientos en la cotización actual</h6>
+    <p class="small mb-3">Selecciona tratamientos desde el catálogo para calcular un presupuesto.</p>
+    <a href="{% url 'core:servicios' %}" class="btn btn-primary btn-sm">Explorar Catálogo</a>
 </div>
 {% endif %}
 {% endblock %}

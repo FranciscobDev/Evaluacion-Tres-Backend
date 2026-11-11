@@ -11,6 +11,9 @@
             </a>
             {% if user.is_authenticated and user.is_staff %}
             <div class="d-flex gap-2">
+                <a href="{% url 'core:agregar_al_presupuesto' tratamiento.id %}" class="btn btn-outline-info btn-sm">
+                    <i class="bi bi-calculator me-1"></i>Cotizar en Sesión
+                </a>
                 <a href="{% url 'core:editar_tratamiento' tratamiento.slug %}" class="btn btn-primary btn-sm">
                     <i class="bi bi-pencil-square me-1"></i>Editar Tratamiento
                 </a>
@@ -23,14 +26,15 @@
 
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4">
             <div class="row g-0">
-                <div class="col-md-5 bg-dark d-flex align-items-center justify-content-center p-4 text-center text-white">
+                <div
+                    class="col-md-5 bg-dark d-flex align-items-center justify-content-center p-4 text-center text-white">
                     {% if tratamiento.imagen %}
-                        <img src="{{ tratamiento.imagen.url }}" alt="{{ tratamiento.nombre }}" class="img-fluid rounded-3 shadow">
+                    <img src="{{ tratamiento.imagen.url }}" alt="{{ tratamiento.nombre }}"
+                        class="img-fluid rounded-3 shadow">
                     {% else %}
-                        <div>
-                            <i class="bi {{ tratamiento.especialidad.icono }} text-info" style="font-size: 5rem;"></i>
-                            <div class="mt-2 badge bg-info text-dark fs-6">{{ tratamiento.codigo }}</div>
-                        </div>
+                    <div>
+                        <i class="bi {{ tratamiento.especialidad.icono }} text-info" style="font-size: 5rem;"></i>
+                    </div>
                     {% endif %}
                 </div>
                 <div class="col-md-7 p-4 p-md-5">
@@ -42,28 +46,25 @@
                     <p class="text-secondary mb-4">{{ tratamiento.descripcion }}</p>
 
                     <div class="p-3 bg-light rounded-3 border mb-4 small">
-                        <div class="mb-1"><strong><i class="bi bi-clipboard2-check text-primary me-1"></i>Indicaciones previas:</strong> {{ tratamiento.indicaciones_previas }}</div>
-                        <div class="mb-1"><strong><i class="bi bi-clock text-primary me-1"></i>Duración por sesión:</strong> {{ tratamiento.duracion_minutos }} minutos</div>
-                        <div><strong><i class="bi bi-people text-primary me-1"></i>Cupos diarios habilitados:</strong> {{ tratamiento.cupos_diarios }} cupos</div>
+                        <div class="mb-1"><strong><i class="bi bi-clipboard2-check text-primary me-1"></i>Indicaciones
+                                previas:</strong> {{ tratamiento.indicaciones_previas }}</div>
+                        <div class="mb-1"><strong><i class="bi bi-clock text-primary me-1"></i>Duración por
+                                sesión:</strong> {{ tratamiento.duracion_minutos }} minutos</div>
+                        <div><strong><i class="bi bi-people text-primary me-1"></i>Cupos diarios habilitados:</strong>
+                            {{ tratamiento.cupos_diarios }} cupos</div>
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 border-top pt-3">
                         <div>
                             <small class="text-secondary d-block">Arancel Clínico:</small>
-                            <span class="display-6 fw-bold text-primary">${{ tratamiento.arancel }} <small class="fs-6">CLP</small></span>
+                            <span class="display-6 fw-bold text-primary">${{ tratamiento.arancel }} <small
+                                    class="fs-6">CLP</small></span>
                         </div>
-
-                        {% if tratamiento.puede_cotizarse %}
-                        <form method="post" action="{% url 'core:agregar_al_presupuesto' tratamiento.id %}" class="d-flex align-items-center gap-2">
-                            {% csrf_token %}
-                            <input type="number" name="sesiones" value="1" min="1" max="{{ tratamiento.cupos_diarios }}" class="form-control" style="width: 85px;" title="Número de sesiones o piezas">
-                            <button type="submit" class="btn btn-info fw-bold text-dark px-4">
-                                <i class="bi bi-calculator me-1"></i>Agregar al Presupuesto
-                            </button>
-                        </form>
-                        {% else %}
-                            <span class="badge bg-danger p-2">No disponible para cotización</span>
-                        {% endif %}
+                        <div>
+                            <a href="{% url 'core:contacto' %}" class="btn btn-success fw-semibold px-3 py-2">
+                                <i class="bi bi-whatsapp me-1"></i>Consultar en Recepción
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -71,4 +72,3 @@
     </div>
 </div>
 {% endblock %}
-

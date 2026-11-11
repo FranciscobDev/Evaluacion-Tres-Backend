@@ -153,3 +153,5 @@ class TratamientoOdontologico(models.Model):
     @property
     def puede_cotizarse(self):
         return self.vigente and self.estado != 'suspendido' and self.cupos_diarios > 0
+
+

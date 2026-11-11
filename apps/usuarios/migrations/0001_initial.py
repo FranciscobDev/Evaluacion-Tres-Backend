@@ -18,16 +18,16 @@ class Migration(migrations.Migration):
             name='Perfil',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('rol', models.CharField(choices=[('dentista', 'Dentista / Odontólogo'), ('recepcionista', 'Recepcionista'), ('administrador', 'Administrador de Clínica'), ('paciente', 'Paciente / Usuario Estándar')], default='paciente', max_length=20, verbose_name='Rol Institucional')),
+                ('rol', models.CharField(choices=[('dentista', 'Dentista / Odontólogo'), ('recepcionista', 'Recepcionista'), ('administrador', 'Administrador de Clínica')], default='recepcionista', max_length=20, verbose_name='Rol en la Clínica')),
                 ('rut', models.CharField(blank=True, max_length=12, verbose_name='RUT / Identificación')),
                 ('telefono', models.CharField(blank=True, max_length=20, verbose_name='Teléfono de Contacto')),
                 ('especialidad', models.CharField(blank=True, choices=[('general', 'Odontología General'), ('ortodoncia', 'Ortodoncia'), ('endodoncia', 'Endodoncia'), ('periodoncia', 'Periodoncia'), ('odontopediatria', 'Odontopediatría'), ('cirugia', 'Cirugía Maxilofacial e Implantes'), ('rehabilitacion', 'Rehabilitación Oral y Estética')], default='general', max_length=30, verbose_name='Especialidad Odontológica')),
                 ('registro_salud', models.CharField(blank=True, max_length=50, verbose_name='N° Registro Superintendencia de Salud')),
-                ('usuario', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='perfil', to=settings.AUTH_USER_MODEL, verbose_name='Usuario')),
+                ('usuario', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='perfil', to=settings.AUTH_USER_MODEL, verbose_name='Funcionario')),
             ],
             options={
-                'verbose_name': 'Perfil de Usuario',
-                'verbose_name_plural': 'Perfiles de Usuarios',
+                'verbose_name': 'Perfil de Funcionario',
+                'verbose_name_plural': 'Perfiles de Funcionarios',
             },
         ),
     ]

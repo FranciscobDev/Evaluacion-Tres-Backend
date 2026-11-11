@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,122 +17,134 @@
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="{% static 'css/custom.css' %}">
 </head>
+
 <body class="d-flex flex-column min-vh-100">
 
     <!-- Barra de Navegación -->
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-checkdent sticky-top shadow-sm py-3">
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-checkdent sticky-top shadow-sm py-2">
         <div class="container">
-            <a class="navbar-brand navbar-brand-checkdent text-info fs-4 d-flex align-items-center" href="{% url 'core:inicio' %}">
-                <img src="{% static 'img/logo.svg' %}" alt="Logo CheckDent" width="34" height="34" class="me-2 rounded-2">
+            <a class="navbar-brand navbar-brand-checkdent text-info fs-5 d-flex align-items-center me-3"
+                href="{% url 'core:inicio' %}">
+                <img src="{% static 'img/logo.svg' %}" alt="Logo CheckDent" width="30" height="30"
+                    class="me-2 rounded-2">
                 <span>CheckDent</span>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
+                data-bs-target="#menuPrincipal">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
             <div class="collapse navbar-collapse" id="menuPrincipal">
-                <ul class="navbar-nav me-auto">
+                <!-- Enlaces Principales de Navegación -->
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-1">
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'core:inicio' %}">
-                            <i class="bi bi-house me-1"></i>Inicio
+                            <i class="bi bi-house"></i>Inicio
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'core:servicios' %}">
-                            <i class="bi bi-grid-1x2 me-1"></i>Catálogo de Tratamientos
+                            <i class="bi bi-grid-1x2"></i>Catálogo de Tratamientos
                         </a>
                     </li>
-                    {% if user.is_authenticated and user.is_staff %}
-                    <li class="nav-item">
-                        <a class="nav-link text-success fw-semibold" href="{% url 'core:crear_tratamiento' %}">
-                            <i class="bi bi-plus-circle me-1"></i>Nuevo Tratamiento
-                        </a>
-                    </li>
-                    {% endif %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'core:contacto' %}">
-                            <i class="bi bi-geo-alt me-1"></i>Contacto
+                            <i class="bi bi-geo-alt"></i>Contacto y Ubicación
                         </a>
                     </li>
-                    {% if user.is_authenticated %}
-                        {% if user.perfil.es_dentista %}
-                            <li class="nav-item">
-                                <a class="nav-link text-warning fw-semibold" href="{% url 'disponibilidad:mi_agenda' %}">
-                                    <i class="bi bi-calendar-week me-1"></i>Mi Agenda Odontológica
-                                </a>
-                            </li>
-                        {% elif user.perfil.es_recepcionista %}
-                            <li class="nav-item">
-                                <a class="nav-link text-info fw-semibold" href="{% url 'citas:panel_recepcion' %}">
-                                    <i class="bi bi-clipboard2-pulse me-1"></i>Panel de Recepción
-                                </a>
-                            </li>
-                        {% endif %}
-                    {% endif %}
                 </ul>
 
-                <!-- Cotizador en Sesión + Zona de Usuario -->
+                <!-- Zona de Personal Clínico y Acciones -->
                 <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <!-- Botón del Presupuesto Dental en Sesión (Context Processor Global) -->
-                    <a href="{% url 'core:ver_presupuesto' %}" class="btn btn-outline-warning btn-sm position-relative d-flex align-items-center gap-1 fw-semibold">
-                        <i class="bi bi-calculator-fill"></i>
-                        <span>Mi Presupuesto</span>
-                        <span class="badge rounded-pill bg-warning text-dark ms-1">
-                            {{ presupuesto_total_items|default:0 }}
-                        </span>
-                    </a>
-
                     {% if user.is_authenticated %}
-                        <div class="dropdown">
-                            <button class="btn btn-outline-light btn-sm dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-person-circle fs-6 text-info"></i>
-                                <span>{{ user.first_name|default:user.username }}</span>
-                                {% if user.perfil.rol == 'dentista' %}
-                                    <span class="badge bg-warning text-dark">Odontólogo</span>
-                                {% elif user.perfil.rol == 'recepcionista' %}
-                                    <span class="badge bg-info text-dark">Recepción</span>
-                                {% elif user.perfil.rol == 'administrador' %}
-                                    <span class="badge bg-danger">Admin</span>
-                                {% else %}
-                                    <span class="badge bg-secondary">Paciente</span>
-                                {% endif %}
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end shadow">
-                                <li>
-                                    <h6 class="dropdown-header">Conectado como {{ user.username }}</h6>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{% url 'usuarios:perfil' %}">
-                                        <i class="bi bi-person me-2"></i>Mi Perfil
-                                    </a>
-                                </li>
-                                {% if user.is_staff %}
-                                    <li>
-                                        <a class="dropdown-item" href="{% url 'core:crear_tratamiento' %}">
-                                            <i class="bi bi-plus-square me-2 text-success"></i>Registrar Tratamiento (CRUD)
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="/admin/" target="_blank">
-                                            <i class="bi bi-shield-lock me-2"></i>Panel Django Admin
-                                        </a>
-                                    </li>
-                                {% endif %}
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item text-danger" href="{% url 'usuarios:logout' %}">
-                                        <i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
+                    {% if user.perfil.es_dentista %}
+                    <a href="{% url 'disponibilidad:mi_agenda' %}"
+                        class="btn btn-primary btn-sm btn-nav-action shadow-sm">
+                        <i class="bi bi-calendar2-week"></i>
+                        <span>Mi Agenda</span>
+                    </a>
+                    {% elif user.perfil.es_recepcionista %}
+                    <a href="{% url 'citas:panel_recepcion' %}"
+                        class="btn btn-info text-dark btn-sm btn-nav-action shadow-sm">
+                        <i class="bi bi-clipboard2-pulse"></i>
+                        <span>Panel de Citas</span>
+                    </a>
+                    {% endif %}
+
+                    {% if user.is_staff %}
+                    <a href="{% url 'core:crear_tratamiento' %}" class="btn btn-outline-light btn-sm btn-nav-action"
+                        title="Registrar nuevo tratamiento">
+                        <i class="bi bi-plus-lg"></i>
+                        <span>Nuevo Tratamiento</span>
+                    </a>
+                    {% endif %}
+
+                    <div class="vr bg-secondary opacity-50 mx-1 d-none d-lg-block" style="height: 22px;"></div>
+
+                    <div class="dropdown">
+                        <button class="btn navbar-user-btn dropdown-toggle d-flex align-items-center gap-2"
+                            type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle fs-6 text-info"></i>
+                            <span class="fw-medium">{{ user.first_name|default:user.username }}</span>
+                            {% if user.perfil.rol == 'dentista' %}
+                            <span class="badge bg-warning text-dark rounded-pill px-2">Odontólogo</span>
+                            {% elif user.perfil.rol == 'administrador' %}
+                            <span class="badge bg-danger rounded-pill px-2">Admin</span>
+                            {% else %}
+                            <span class="badge bg-info text-dark rounded-pill px-2">Recepción</span>
+                            {% endif %}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 rounded-3">
+                            <li>
+                                <h6 class="dropdown-header small text-muted fw-bold">Funcionario: {{ user.get_full_name|default:user.username }}</h6>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2" href="{% url 'usuarios:perfil' %}">
+                                    <i class="bi bi-person-badge me-2 text-primary"></i>Mi Ficha Institucional
+                                </a>
+                            </li>
+                            {% if user.is_staff %}
+                            <li>
+                                <a class="dropdown-item py-2" href="{% url 'core:crear_tratamiento' %}">
+                                    <i class="bi bi-plus-circle me-2 text-success"></i>Registrar Tratamiento
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2" href="{% url 'core:ver_presupuesto' %}">
+                                    <i class="bi bi-calculator me-2 text-info"></i>Plan de Cotización
+                                    {% if presupuesto_total_items %}
+                                        <span class="badge bg-primary rounded-pill ms-1">{{ presupuesto_total_items }}</span>
+                                    {% endif %}
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% if user.is_superuser or user.perfil.rol == 'administrador' %}
+                            <li>
+                                <a class="dropdown-item py-2" href="{% url 'usuarios:registro' %}">
+                                    <i class="bi bi-person-plus me-2 text-primary"></i>Alta de Funcionario
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2" href="/admin/" target="_blank">
+                                    <i class="bi bi-shield-lock me-2 text-secondary"></i>Panel Django Admin
+                                </a>
+                            </li>
+                            {% endif %}
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2 text-danger" href="{% url 'usuarios:logout' %}">
+                                    <i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                     {% else %}
-                        <a href="{% url 'usuarios:login' %}" class="btn btn-outline-info btn-sm">
-                            <i class="bi bi-person-lock me-1"></i>Ingresar
-                        </a>
-                        <a href="{% url 'usuarios:registro' %}" class="btn btn-info btn-sm fw-bold text-dark">
-                            <i class="bi bi-person-plus me-1"></i>Registrarse
-                        </a>
+                    <a href="{% url 'usuarios:login' %}" class="btn btn-outline-info btn-sm btn-nav-action">
+                        <i class="bi bi-shield-lock"></i>
+                        <span>Acceso Funcionarios</span>
+                    </a>
                     {% endif %}
                 </div>
             </div>
@@ -141,19 +154,19 @@
     <!-- Contenedor Global de Mensajes Flash de Django -->
     <div class="container mt-3">
         {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
-                    {% if message.tags == 'success' %}
-                        <i class="bi bi-check-circle-fill me-2"></i>
-                    {% elif message.tags == 'danger' or message.tags == 'error' %}
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    {% else %}
-                        <i class="bi bi-info-circle-fill me-2"></i>
-                    {% endif %}
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+            {% if message.tags == 'success' %}
+            <i class="bi bi-check-circle-fill me-2"></i>
+            {% elif message.tags == 'danger' or message.tags == 'error' %}
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {% else %}
+            <i class="bi bi-info-circle-fill me-2"></i>
+            {% endif %}
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
         {% endif %}
     </div>
 
@@ -169,7 +182,8 @@
                 <img src="{% static 'img/logo.svg' %}" alt="Logo CheckDent" width="24" height="24">
                 <span class="fw-bold text-info fs-6">CheckDent — Sistema Odontológico Integral</span>
             </div>
-            <small class="text-secondary d-block">&copy; 2026 Clínica CheckDent. Gestión de prestaciones odontológicas, presupuestos en sesión y agenda médica.</small>
+            <small class="text-secondary d-block">&copy; 2026 Clínica CheckDent. Atención a pacientes vía Recepción y
+                WhatsApp.</small>
         </div>
     </footer>
 
@@ -177,5 +191,5 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'js/main.js' %}"></script>
 </body>
-</html>
 
+</html>

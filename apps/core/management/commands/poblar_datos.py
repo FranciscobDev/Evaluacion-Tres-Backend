@@ -1,4 +1,6 @@
+import os
 from datetime import date, time, timedelta
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from apps.core.models import EspecialidadOdontologica, TratamientoOdontologico
@@ -42,55 +44,52 @@ class Command(BaseCommand):
             mapa_esp[codigo] = esp
         self.stdout.write(self.style.SUCCESS(f"✓ {len(mapa_esp)} Especialidades Odontológicas (clasificadores) cargadas."))
 
-        # 2. Entidades Principales Gestionables (10 Tratamientos Odontológicos)
+        # 2. Entidades Principales Gestionables (5 Tratamientos Odontológicos)
         tratamientos_data = [
             ("TRT-ORT-001", "ESP-ORT", "Instalación de Brackets Metálicos",
              "Cementado de arco completo de brackets de autoligado con control biomecánico inicial.",
              "Requiere radiografía panorámica y telerradiografía lateral.", 180000, 60, 4, "disponible"),
-            ("TRT-ORT-002", "ESP-ORT", "Alineadores Invisibles Transparentes",
-             "Set inicial de férulas termoplásticas personalizadas tras escaneo intraoral 3D.",
-             "Higiene dental previa sin presencia de caries activas.", 320000, 45, 3, "en_curso"),
             ("TRT-END-001", "ESP-END", "Endodoncia Unirradicular Mecanizada",
              "Desinfección rotatoria y obturación termoplástica de conducto en incisivos o caninos.",
              "Radiografía retroalveolar periapical previa.", 95000, 60, 5, "disponible"),
-            ("TRT-END-002", "ESP-END", "Endodoncia Multirradicular de Molar",
-             "Tratamiento de conducto de alta complejidad con localizador apical electrónico en molares.",
-             "Evaluación de restaurabilidad coronaria previa.", 145000, 90, 3, "disponible"),
             ("TRT-PER-001", "ESP-PER", "Destartraje Supragingival y Profilaxis",
              "Limpieza dental por ultrasonido para remoción de tártaro, placa bacteriana y manchas.",
              "No requiere preparación especial previa.", 38000, 45, 8, "disponible"),
-            ("TRT-PER-002", "ESP-PER", "Pulido Radicular por Cuadrante",
-             "Descontaminación subgingival profunda para el control de enfermedad periodontal activa.",
-             "Periodontograma clínico previo.", 65000, 60, 5, "disponible"),
             ("TRT-IMP-001", "ESP-IMP", "Implante Dental de Titanio Grado IV",
              "Inserción quirúrgica de fijación oseointegrada de titanio para reemplazo de raíz dental.",
              "Tomografía Cone Beam (CBCT) del maxilar correspondiente.", 390000, 90, 2, "disponible"),
-            ("TRT-IMP-002", "ESP-IMP", "Exodoncia de Tercer Molar (Muela del Juicio)",
-             "Extracción quirúrgica atraumática de tercer molar semi-incluido bajo anestesia local.",
-             "Radiografía panorámica vigente menor a 6 meses.", 85000, 60, 4, "en_curso"),
-            ("TRT-PED-001", "ESP-PED", "Sellantes Fotopolimerizables + Fluoración",
-             "Sellado preventivo de fosas y fisuras en molares definitivos jóvenes más barniz de flúor.",
-             "Niños y adolescentes de 6 a 14 años.", 32000, 30, 10, "disponible"),
             ("TRT-EST-001", "ESP-EST", "Blanqueamiento Dental Clínico LED",
              "Aclaramiento dental fotoactivado con peróxido de hidrógeno de uso clínico y barrera gingival.",
              "Destartraje previo realizado en los últimos 30 días.", 110000, 60, 6, "disponible"),
         ]
 
+        codigos_mantener = [t[0] for t in tratamientos_data]
+        TratamientoOdontologico.objects.exclude(codigo__in=codigos_mantener).delete()
+
         for cod, cod_esp, nom, desc, ind, aran, dur, cupos, est in tratamientos_data:
-            TratamientoOdontologico.objects.update_or_create(
+            img_rel = f"tratamientos/{nom}.png"
+            img_full = os.path.join(settings.MEDIA_ROOT, img_rel)
+            defaults_dict = {
+                'especialidad': mapa_esp[cod_esp],
+                'nombre': nom,
+                'descripcion': desc,
+                'indicaciones_previas': ind,
+                'arancel': aran,
+                'duracion_minutos': dur,
+                'cupos_diarios': cupos,
+                'estado': est,
+                'vigente': True,
+            }
+            if os.path.exists(img_full):
+                defaults_dict['imagen'] = img_rel
+
+            trat, _ = TratamientoOdontologico.objects.update_or_create(
                 codigo=cod,
-                defaults={
-                    'especialidad': mapa_esp[cod_esp],
-                    'nombre': nom,
-                    'descripcion': desc,
-                    'indicaciones_previas': ind,
-                    'arancel': aran,
-                    'duracion_minutos': dur,
-                    'cupos_diarios': cupos,
-                    'estado': est,
-                    'vigente': True,
-                }
+                defaults=defaults_dict
             )
+            if os.path.exists(img_full) and not trat.imagen:
+                trat.imagen = img_rel
+                trat.save()
         self.stdout.write(self.style.SUCCESS(f"✓ {len(tratamientos_data)} Tratamientos Odontológicos cargados."))
 
         # 3. Usuarios de Prueba (Admin, Dentistas, Recepcionista y Usuario Estándar)
@@ -106,37 +105,62 @@ class Command(BaseCommand):
         admin_user.perfil.telefono = "+56 9 1111 2222"
         admin_user.perfil.save()
 
-        dr_roberto, created = User.objects.get_or_create(username="dr.roberto", defaults={
-            'first_name': "Roberto",
-            'last_name': "Gómez",
-            'email': "roberto.gomez@checkdent.cl",
+        dr_mauricio, created = User.objects.get_or_create(username="dr.mauricio", defaults={
+            'first_name': "Mauricio",
+            'last_name': "López",
+            'email': "mauricio.lopez@checkdent.cl",
             'is_staff': True,
         })
         if created:
-            dr_roberto.set_password("dentista123")
-            dr_roberto.save()
-        dr_roberto.perfil.rol = "dentista"
-        dr_roberto.perfil.especialidad = "ortodoncia"
-        dr_roberto.perfil.telefono = "+56 9 2233 4455"
-        dr_roberto.perfil.rut = "15.432.189-K"
-        dr_roberto.perfil.registro_salud = "REG-MED-84920"
-        dr_roberto.perfil.save()
+            dr_mauricio.set_password("dentista123")
+            dr_mauricio.save()
+        dr_mauricio.first_name = "Mauricio"
+        dr_mauricio.last_name = "López"
+        dr_mauricio.save()
+        dr_mauricio.perfil.rol = "dentista"
+        dr_mauricio.perfil.especialidad = "ortodoncia"
+        dr_mauricio.perfil.telefono = "+56 9 2233 4455"
+        dr_mauricio.perfil.rut = "15.432.189-K"
+        dr_mauricio.perfil.registro_salud = "REG-MED-84920"
+        dr_mauricio.perfil.save()
 
-        dra_camila, created = User.objects.get_or_create(username="dra.camila", defaults={
-            'first_name': "Camila",
-            'last_name': "Morales",
-            'email': "camila.morales@checkdent.cl",
+        dr_ismael, created = User.objects.get_or_create(username="dr.ismael", defaults={
+            'first_name': "Ismael",
+            'last_name': "Figueroa",
+            'email': "ismael.figueroa@checkdent.cl",
             'is_staff': True,
         })
         if created:
-            dra_camila.set_password("dentista123")
-            dra_camila.save()
-        dra_camila.perfil.rol = "dentista"
-        dra_camila.perfil.especialidad = "endodoncia"
-        dra_camila.perfil.telefono = "+56 9 3344 5566"
-        dra_camila.perfil.rut = "16.789.234-5"
-        dra_camila.perfil.registro_salud = "REG-MED-91234"
-        dra_camila.perfil.save()
+            dr_ismael.set_password("dentista123")
+            dr_ismael.save()
+        dr_ismael.first_name = "Ismael"
+        dr_ismael.last_name = "Figueroa"
+        dr_ismael.save()
+        dr_ismael.perfil.rol = "dentista"
+        dr_ismael.perfil.especialidad = "endodoncia"
+        dr_ismael.perfil.telefono = "+56 9 3344 5566"
+        dr_ismael.perfil.rut = "16.789.234-5"
+        dr_ismael.perfil.registro_salud = "REG-MED-91234"
+        dr_ismael.perfil.save()
+
+        dr_francisco, created = User.objects.get_or_create(username="dr.francisco", defaults={
+            'first_name': "Francisco",
+            'last_name': "Miranda",
+            'email': "francisco.miranda@checkdent.cl",
+            'is_staff': True,
+        })
+        if created:
+            dr_francisco.set_password("dentista123")
+            dr_francisco.save()
+        dr_francisco.first_name = "Francisco"
+        dr_francisco.last_name = "Miranda"
+        dr_francisco.save()
+        dr_francisco.perfil.rol = "dentista"
+        dr_francisco.perfil.especialidad = "odontopediatria"
+        dr_francisco.perfil.telefono = "+56 9 5566 7788"
+        dr_francisco.perfil.rut = "17.890.123-4"
+        dr_francisco.perfil.registro_salud = "REG-MED-77123"
+        dr_francisco.perfil.save()
 
         recep_carla, created = User.objects.get_or_create(username="carla.recepcion", defaults={
             'first_name': "Carla",
@@ -152,20 +176,9 @@ class Command(BaseCommand):
         recep_carla.perfil.rut = "18.321.654-2"
         recep_carla.perfil.save()
 
-        paciente_user, created = User.objects.get_or_create(username="paciente.demo", defaults={
-            'first_name': "Valentina",
-            'last_name': "Muñoz",
-            'email': "valentina@correo.cl",
-            'is_staff': False,
-        })
-        if created:
-            paciente_user.set_password("paciente123")
-            paciente_user.save()
-        paciente_user.perfil.rol = "paciente"
-        paciente_user.perfil.rut = "12.345.678-5"
-        paciente_user.perfil.telefono = "+56 9 9988 7766"
-        paciente_user.perfil.save()
-        self.stdout.write(self.style.SUCCESS("✓ Cuentas de prueba (admin, dentistas, recepción y usuario estándar) listas."))
+        # Eliminar cuenta paciente.demo si existía previamente (los pacientes no tienen login)
+        User.objects.filter(username="paciente.demo").delete()
+        self.stdout.write(self.style.SUCCESS("✓ Cuentas de personal clínico (admin, dentistas y recepción) listas."))
 
         # 4. Pacientes de Recepción (RUTs válidos Módulo 11)
         pacientes_data = [
@@ -198,7 +211,11 @@ class Command(BaseCommand):
         ]
         for offset in range(3):
             dia = hoy + timedelta(days=offset)
-            for dentista, box in [(dr_roberto, "Box 1 - Ortodoncia"), (dra_camila, "Box 2 - Endodoncia")]:
+            for dentista, box in [
+                (dr_mauricio, "Box 1 - Ortodoncia"),
+                (dr_ismael, "Box 2 - Endodoncia"),
+                (dr_francisco, "Box 3 - Odontopediatría")
+            ]:
                 for h_ini, h_fin in horarios:
                     BloqueDisponibilidad.objects.get_or_create(
                         dentista=dentista,
@@ -213,7 +230,7 @@ class Command(BaseCommand):
 
         # 6. Cita de ejemplo agendada para hoy
         bloque_ejemplo = BloqueDisponibilidad.objects.filter(
-            dentista=dr_roberto, fecha=hoy, estado='disponible'
+            dentista=dr_mauricio, fecha=hoy, estado='disponible'
         ).first()
         if bloque_ejemplo:
             Cita.objects.get_or_create(

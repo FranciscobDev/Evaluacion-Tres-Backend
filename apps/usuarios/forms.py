@@ -2,6 +2,7 @@ from itertools import cycle
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
+from .models import Perfil
 
 
 def validar_rut_chileno_perfil(rut_str):
@@ -22,12 +23,12 @@ def validar_rut_chileno_perfil(rut_str):
 
 
 class LoginForm(AuthenticationForm):
-    """Formulario de inicio de sesión con estilos Bootstrap 5."""
+    """Formulario de inicio de sesión exclusivo para personal clínico (Odontólogos, Recepción y Admin)."""
     username = forms.CharField(
-        label="Usuario",
+        label="Usuario Institucional",
         widget=forms.TextInput(attrs={
             'class': 'form-control form-control-lg',
-            'placeholder': 'Ej. admin, dr.roberto o carla.recepcion',
+            'placeholder': 'Ej. dr.mauricio, dr.ismael, dr.francisco o carla.recepcion',
             'autofocus': True,
         })
     )
@@ -41,26 +42,31 @@ class LoginForm(AuthenticationForm):
 
 
 class RegistroUsuarioForm(UserCreationForm):
-    """Formulario de registro de nuevos usuarios con RUT y teléfono para su Perfil."""
+    """Formulario administrativo de alta de nuevo personal clínico (Odontólogos o Recepcionistas)."""
+    ROL_STAFF_CHOICES = [
+        ('recepcionista', 'Recepcionista Clínico(a)'),
+        ('dentista', 'Dentista / Odontólogo(a)'),
+    ]
+
     first_name = forms.CharField(
         label="Nombres",
         max_length=100,
         required=True,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Valentina'})
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Francisco'})
     )
     last_name = forms.CharField(
         label="Apellidos",
         max_length=100,
         required=True,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Muñoz Rojas'})
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Miranda'})
     )
     email = forms.EmailField(
-        label="Correo Electrónico",
+        label="Correo Institucional",
         required=True,
-        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'valentina@correo.cl'})
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'funcionario@checkdent.cl'})
     )
     rut = forms.CharField(
-        label="RUT",
+        label="RUT (Módulo 11)",
         max_length=15,
         required=True,
         widget=forms.TextInput(attrs={'class': 'form-control', 'id': 'id_rut', 'placeholder': 'Ej. 12.345.678-5'})
@@ -71,18 +77,31 @@ class RegistroUsuarioForm(UserCreationForm):
         required=True,
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+56 9 8765 4321'})
     )
+    rol = forms.ChoiceField(
+        label="Rol en la Clínica",
+        choices=ROL_STAFF_CHOICES,
+        initial='dentista',
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    especialidad = forms.ChoiceField(
+        label="Especialidad (Odontólogos)",
+        choices=Perfil.ESPECIALIDADES,
+        required=False,
+        initial='general',
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
 
-    class Meta:
+    class Meta(UserCreationForm.Meta):
         model = User
-        fields = ('username', 'first_name', 'last_name', 'email', 'rut', 'telefono')
+        fields = ('username', 'first_name', 'last_name', 'email', 'rut', 'telefono', 'rol', 'especialidad')
         widgets = {
-            'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre de usuario único'}),
+            'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. dr.apellido', 'autocomplete': 'off'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['password1'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Contraseña segura'})
-        self.fields['password2'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Repite tu contraseña'})
+        self.fields['password1'].widget.attrs.update({'class': 'form-control', 'autocomplete': 'new-password'})
+        self.fields['password2'].widget.attrs.update({'class': 'form-control', 'autocomplete': 'new-password'})
 
     def clean_rut(self):
         return validar_rut_chileno_perfil(self.cleaned_data.get('rut', ''))
@@ -92,11 +111,12 @@ class RegistroUsuarioForm(UserCreationForm):
         user.first_name = self.cleaned_data['first_name']
         user.last_name = self.cleaned_data['last_name']
         user.email = self.cleaned_data['email']
+        user.is_staff = True
         if commit:
             user.save()
             user.perfil.rut = self.cleaned_data['rut']
             user.perfil.telefono = self.cleaned_data['telefono']
-            user.perfil.rol = 'paciente'
+            user.perfil.rol = self.cleaned_data['rol']
+            user.perfil.especialidad = self.cleaned_data.get('especialidad') or 'general'
             user.perfil.save()
         return user
-

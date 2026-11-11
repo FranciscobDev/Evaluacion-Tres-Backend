@@ -10,4 +10,3 @@ urlpatterns = [
     path('redireccion/', views.redireccion_rol, name='redireccion_rol'),
     path('perfil/', views.perfil_usuario, name='perfil'),
 ]
-
