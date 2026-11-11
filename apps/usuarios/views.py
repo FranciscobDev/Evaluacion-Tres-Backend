@@ -1,27 +1,32 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from .forms import LoginForm, RegistroUsuarioForm
 
 
-def registro_usuario(request):
-    """Permite registrar una nueva cuenta de usuario con su Perfil asociado."""
-    if request.user.is_authenticated:
-        return redirect('usuarios:redireccion_rol')
+def es_administrador(user):
+    """Verifica que el usuario sea Administrador de la clínica."""
+    return user.is_authenticated and (
+        user.is_superuser or (hasattr(user, 'perfil') and user.perfil.rol == 'administrador')
+    )
 
+
+@login_required
+@user_passes_test(es_administrador)
+def registro_usuario(request):
+    """Permite exclusivamente al Administrador registrar nuevo personal clínico."""
     if request.method == 'POST':
         form = RegistroUsuarioForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
+            nuevo_user = form.save()
             messages.success(
                 request,
-                f"¡Cuenta creada con éxito! Bienvenido(a) a Clínica CheckDent, {user.get_full_name()}."
+                f"✓ Funcionario {nuevo_user.get_full_name()} ({nuevo_user.perfil.get_rol_display()}) registrado con éxito."
             )
-            return redirect('core:servicios')
+            return redirect('core:inicio')
         else:
-            messages.error(request, "Por favor corrige los errores señalados en el formulario de registro.")
+            messages.error(request, "Por favor corrige los errores señalados en el formulario.")
     else:
         form = RegistroUsuarioForm()
 
@@ -29,7 +34,7 @@ def registro_usuario(request):
 
 
 def login_usuario(request):
-    """Gestiona el inicio de sesión de dentistas, recepcionistas, administradores y pacientes."""
+    """Gestiona el inicio de sesión exclusivo de dentistas, recepcionistas y administradores."""
     if request.user.is_authenticated:
         return redirect('usuarios:redireccion_rol')
 
@@ -38,7 +43,7 @@ def login_usuario(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            rol_nombre = user.perfil.get_rol_display() if hasattr(user, 'perfil') else "Usuario"
+            rol_nombre = user.perfil.get_rol_display() if hasattr(user, 'perfil') else "Funcionario"
             messages.success(
                 request,
                 f"¡Bienvenido(a), {user.get_full_name() or user.username}! Sesión iniciada como {rol_nombre}."
@@ -48,7 +53,7 @@ def login_usuario(request):
                 return redirect(next_url)
             return redirect('usuarios:redireccion_rol')
         else:
-            messages.error(request, "Usuario o contraseña incorrectos. Verifica tus credenciales.")
+            messages.error(request, "Usuario o contraseña incorrectos. Verifica tus credenciales institucionales.")
     else:
         form = LoginForm()
 
@@ -59,29 +64,28 @@ def login_usuario(request):
 
 
 def logout_usuario(request):
-    """Cierra la sesión del usuario actual."""
+    """Cierra la sesión del funcionario actual."""
     logout(request)
-    messages.info(request, "Has cerrado sesión correctamente. ¡Hasta pronto!")
+    messages.info(request, "Has cerrado tu sesión clínica correctamente. ¡Hasta pronto!")
     return redirect('core:inicio')
 
 
 @login_required
 def redireccion_rol(request):
     """
-    Redirige al usuario a su panel correspondiente según su rol:
-    - Dentista -> su agenda de pacientes
-    - Recepcionista / Administrador -> panel de recepción
-    - Paciente / Usuario estándar -> catálogo de tratamientos
+    Redirige al funcionario a su panel operativo según su rol:
+    - Dentista -> su agenda de pacientes y publicación de horas
+    - Recepcionista / Administrador -> panel de recepción y agendamiento
     """
     if hasattr(request.user, 'perfil'):
         if request.user.perfil.es_dentista:
             return redirect('disponibilidad:mi_agenda')
         if request.user.perfil.es_recepcionista:
             return redirect('citas:panel_recepcion')
-    return redirect('core:servicios')
+    return redirect('core:inicio')
 
 
 @login_required
 def perfil_usuario(request):
-    """Muestra los datos y rol institucional del usuario conectado."""
+    """Muestra la ficha institucional del funcionario conectado."""
     return render(request, 'usuarios/perfil.html', {'usuario': request.user})

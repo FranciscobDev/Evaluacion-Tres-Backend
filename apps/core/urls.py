@@ -13,7 +13,7 @@ urlpatterns = [
     path('servicios/<slug:slug>/editar/', views.editar_tratamiento, name='editar_tratamiento'),
     path('servicios/<slug:slug>/eliminar/', views.eliminar_tratamiento, name='eliminar_tratamiento'),
 
-    # Cotizador / Presupuesto Transitorio en Sesión HTTP
+    # Cotizador / Presupuesto Transitorio en Sesión HTTP (Criterio 2.1.4)
     path('presupuesto/', views.ver_presupuesto, name='ver_presupuesto'),
     path('presupuesto/agregar/<int:tratamiento_id>/', views.agregar_al_presupuesto, name='agregar_al_presupuesto'),
     path('presupuesto/actualizar/<int:tratamiento_id>/', views.actualizar_item_presupuesto, name='actualizar_item_presupuesto'),
@@ -23,4 +23,3 @@ urlpatterns = [
 
     path('contacto/', views.contacto, name='contacto'),
 ]
-

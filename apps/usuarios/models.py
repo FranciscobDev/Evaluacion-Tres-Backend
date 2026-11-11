@@ -7,13 +7,13 @@ from django.dispatch import receiver
 class Perfil(models.Model):
     """
     Extensión del modelo de usuario estándar de Django para gestionar
-    roles institucionales, RUT y datos profesionales dentro de CheckDent.
+    roles del personal clínico (Odontólogos, Recepcionistas y Administradores).
+    Los pacientes NO tienen cuenta de usuario; son gestionados por recepción.
     """
     ROL_CHOICES = [
         ('dentista', 'Dentista / Odontólogo'),
         ('recepcionista', 'Recepcionista'),
         ('administrador', 'Administrador de Clínica'),
-        ('paciente', 'Paciente / Usuario Estándar'),
     ]
 
     ESPECIALIDADES = [
@@ -30,13 +30,13 @@ class Perfil(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='perfil',
-        verbose_name="Usuario"
+        verbose_name="Funcionario"
     )
     rol = models.CharField(
         max_length=20,
         choices=ROL_CHOICES,
-        default='paciente',
-        verbose_name="Rol Institucional"
+        default='recepcionista',
+        verbose_name="Rol en la Clínica"
     )
     rut = models.CharField(
         max_length=12,
@@ -64,8 +64,8 @@ class Perfil(models.Model):
     )
 
     class Meta:
-        verbose_name = "Perfil de Usuario"
-        verbose_name_plural = "Perfiles de Usuarios"
+        verbose_name = "Perfil de Funcionario"
+        verbose_name_plural = "Perfiles de Funcionarios"
 
     def __str__(self):
         nombre = self.usuario.get_full_name() or self.usuario.username
@@ -82,10 +82,10 @@ class Perfil(models.Model):
 
 @receiver(post_save, sender=User)
 def crear_o_actualizar_perfil(sender, instance, created, **kwargs):
-    """Crea automáticamente un perfil básico si se crea un nuevo User."""
+    """Crea automáticamente un perfil de funcionario si no existe al crear un nuevo User."""
     if created:
-        rol = 'administrador' if instance.is_superuser else 'paciente'
-        Perfil.objects.create(usuario=instance, rol=rol)
+        rol = 'administrador' if instance.is_superuser else 'recepcionista'
+        Perfil.objects.get_or_create(usuario=instance, defaults={'rol': rol})
     else:
         if hasattr(instance, 'perfil'):
             instance.perfil.save()
