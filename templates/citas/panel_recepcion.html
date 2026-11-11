@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+
+{% block title %}Panel de Recepción | CheckDent{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h1 class="h3 fw-bold mb-1">
+            <i class="bi bi-clipboard2-pulse text-info me-2"></i>Panel Operativo de Recepción
+        </h1>
+        <p class="text-secondary small mb-0">
+            Recepción activa por: <strong>{{ user.get_full_name|default:user.username }}</strong> | Asignación de horas médicas y control de pacientes.
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="#seccion-citas" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-list-check me-1"></i>Ver Citas Agendadas ({{ total_citas }})
+        </a>
+        <a href="{% url 'usuarios:perfil' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-person me-1"></i>Mi Ficha
+        </a>
+    </div>
+</div>
+
+<!-- Filtros de Búsqueda de Horas Disponibles -->
+<div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-4">
+            <label class="form-label small fw-semibold text-secondary mb-1">Filtrar por Odontólogo:</label>
+            <select name="dentista" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="">Todos los Odontólogos</option>
+                {% for d in dentistas %}
+                    <option value="{{ d.id }}" {% if dentista_id_actual == d.id|stringformat:"s" %}selected{% endif %}>
+                        Dr(a). {{ d.get_full_name|default:d.username }} ({{ d.perfil.get_especialidad_display }})
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small fw-semibold text-secondary mb-1">Filtrar por Fecha:</label>
+            <input type="date" name="fecha" class="form-control form-control-sm" value="{{ fecha_actual }}" onchange="this.form.submit()">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small fw-semibold text-secondary mb-1">Buscar Paciente en Citas:</label>
+            <input type="text" name="q_paciente" class="form-control form-control-sm" placeholder="RUT o Nombre..." value="{{ query_paciente }}">
+        </div>
+        <div class="col-md-2 d-grid align-self-end">
+            <div class="btn-group btn-group-sm">
+                <button type="submit" class="btn btn-dark">Buscar</button>
+                <a href="{% url 'citas:panel_recepcion' %}" class="btn btn-outline-secondary" title="Limpiar filtros">Limpiar</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- 1. Parrilla de Horas Libres Publicadas por los Odontólogos -->
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-5">
+    <div class="card-header bg-dark text-white py-3 fw-bold d-flex justify-content-between align-items-center">
+        <span>
+            <i class="bi bi-calendar-check text-info me-2"></i>Parrilla de Horas Disponibles para Asignar
+        </span>
+        <span class="badge bg-info text-dark fs-6">{{ total_disponibles }} hora(s) libre(s)</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Fecha</th>
+                    <th>Horario</th>
+                    <th>Odontólogo</th>
+                    <th>Especialidad</th>
+                    <th>Sillón / Box</th>
+                    <th>Disponibilidad</th>
+                    <th class="text-end" style="width: 170px;">Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for bloque in bloques_disponibles %}
+                <tr>
+                    <td class="fw-bold">{{ bloque.fecha|date:"d/m/Y" }}</td>
+                    <td>
+                        <span class="badge bg-light text-dark border fs-6">
+                            {{ bloque.hora_inicio|time:"H:i" }} - {{ bloque.hora_fin|time:"H:i" }}
+                        </span>
+                    </td>
+                    <td>
+                        <strong>Dr(a). {{ bloque.dentista.get_full_name|default:bloque.dentista.username }}</strong>
+                    </td>
+                    <td>
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+                            {{ bloque.dentista.perfil.get_especialidad_display }}
+                        </span>
+                    </td>
+                    <td class="small text-secondary">{{ bloque.box_atencion }}</td>
+                    <td>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle">Disponible</span>
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'citas:agendar_cita' bloque.id %}" class="btn btn-info btn-sm fw-bold text-dark shadow-sm">
+                            <i class="bi bi-person-plus-fill me-1"></i>Asignar Paciente
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-secondary">
+                        <i class="bi bi-clock-history display-4 d-block mb-2 text-muted"></i>
+                        No hay horas disponibles con los filtros seleccionados.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 2. Control de Citas Agendadas y Cambio de Estados -->
+<div id="seccion-citas" class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4">
+    <div class="card-header bg-light py-3 fw-bold d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-list-check text-primary me-2"></i>Control de Citas Agendadas</span>
+        <span class="badge bg-secondary">{{ citas.count }} registradas</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Fecha / Hora</th>
+                    <th>Paciente</th>
+                    <th>Teléfono</th>
+                    <th>Odontólogo</th>
+                    <th>Motivo de Consulta</th>
+                    <th>Estado de Cita</th>
+                    <th class="text-end" style="width: 180px;">Gestión</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cita in citas %}
+                <tr>
+                    <td>
+                        <div class="fw-bold">{{ cita.bloque.fecha|date:"d/m/Y" }}</div>
+                        <span class="badge bg-light text-dark border">{{ cita.bloque.hora_inicio|time:"H:i" }} - {{ cita.bloque.hora_fin|time:"H:i" }}</span>
+                    </td>
+                    <td>
+                        <strong>{{ cita.paciente.nombre_completo }}</strong>
+                        <div class="small text-muted">RUT: {{ cita.paciente.rut }} | {{ cita.paciente.get_prevision_display }}</div>
+                    </td>
+                    <td>
+                        <a href="tel:{{ cita.paciente.telefono }}" class="text-decoration-none small">
+                            <i class="bi bi-telephone me-1"></i>{{ cita.paciente.telefono }}
+                        </a>
+                    </td>
+                    <td>
+                        Dr(a). {{ cita.bloque.dentista.get_full_name|default:cita.bloque.dentista.username }}
+                        <small class="d-block text-secondary">{{ cita.bloque.box_atencion }}</small>
+                    </td>
+                    <td class="small text-secondary" style="max-width: 200px;">{{ cita.motivo_consulta }}</td>
+                    <td>
+                        {% if cita.estado == 'agendada' %}
+                            <span class="badge bg-primary">Agendada</span>
+                        {% elif cita.estado == 'confirmada' %}
+                            <span class="badge bg-info text-dark">Confirmada</span>
+                        {% elif cita.estado == 'en_atencion' %}
+                            <span class="badge bg-warning text-dark">En Atención</span>
+                        {% elif cita.estado == 'realizada' %}
+                            <span class="badge bg-success">Atendida</span>
+                        {% elif cita.estado == 'cancelada' %}
+                            <span class="badge bg-danger">Cancelada</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ cita.get_estado_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-dark btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                Acciones
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'citas:detalle_cita' cita.id %}">
+                                        <i class="bi bi-eye text-primary me-2"></i>Ver Ficha / Comprobante
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="{% url 'citas:cambiar_estado_cita' cita.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="nuevo_estado" value="confirmada">
+                                        <button class="dropdown-item" type="submit">
+                                            <i class="bi bi-check-circle text-info me-2"></i>Confirmar Asistencia
+                                        </button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <form method="post" action="{% url 'citas:cambiar_estado_cita' cita.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="nuevo_estado" value="en_atencion">
+                                        <button class="dropdown-item" type="submit">
+                                            <i class="bi bi-door-open text-warning me-2"></i>Pasó al Box
+                                        </button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <form method="post" action="{% url 'citas:cambiar_estado_cita' cita.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="nuevo_estado" value="realizada">
+                                        <button class="dropdown-item" type="submit">
+                                            <i class="bi bi-check2-all text-success me-2"></i>Marcar Atendida
+                                        </button>
+                                    </form>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="{% url 'citas:cambiar_estado_cita' cita.id %}" onsubmit="return confirm('¿Seguro que deseas cancelar esta cita? La hora volverá a quedar disponible en la parrilla.');">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="nuevo_estado" value="cancelada">
+                                        <button class="dropdown-item text-danger" type="submit">
+                                            <i class="bi bi-x-circle me-2"></i>Cancelar Cita (Liberar Hora)
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-secondary">
+                        No hay citas agendadas que coincidan con la búsqueda.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+

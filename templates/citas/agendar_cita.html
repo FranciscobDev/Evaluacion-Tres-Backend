@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+
+{% block title %}Asignar Cita Odontológica | CheckDent{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div>
+                <h1 class="h3 fw-bold mb-1">
+                    <i class="bi bi-calendar-check-fill text-info me-2"></i>Asignación de Cita Odontológica
+                </h1>
+                <p class="text-secondary small mb-0">
+                    Ingresa los datos del paciente para agendar en la hora seleccionada.
+                </p>
+            </div>
+            <a href="{% url 'citas:panel_recepcion' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>Volver a la Parrilla
+            </a>
+        </div>
+
+        <div class="row g-4">
+            <!-- Tarjeta de Resumen del Horario Seleccionado -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-3">
+                    <div class="bg-dark text-white p-3 fw-bold">
+                        <i class="bi bi-clock-history text-info me-2"></i>Horario Seleccionado
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-3 py-2 fs-6">
+                                {{ bloque.fecha|date:"l, d \d\e F \d\e Y" }}
+                            </span>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-1">
+                            {{ bloque.hora_inicio|time:"H:i" }} - {{ bloque.hora_fin|time:"H:i" }}
+                        </h4>
+                        <div class="text-secondary small mb-3">
+                            <i class="bi bi-door-open me-1"></i>{{ bloque.box_atencion }}
+                        </div>
+
+                        <hr class="my-3">
+
+                        <h6 class="fw-bold text-dark mb-1">
+                            Dr(a). {{ bloque.dentista.get_full_name|default:bloque.dentista.username }}
+                        </h6>
+                        <span class="badge bg-primary mb-2">
+                            {{ bloque.dentista.perfil.get_especialidad_display }}
+                        </span>
+                        <div class="small text-secondary">
+                            <i class="bi bi-award me-1"></i>{{ bloque.dentista.perfil.registro_salud|default:"Registro activo" }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-light rounded-4 border small text-secondary">
+                    <i class="bi bi-shield-check text-success me-1"></i>
+                    <strong>Nota para Recepción:</strong> Si el paciente ya se ha atendido antes en la clínica, al escribir su RUT sus datos se autocompletarán de inmediato.
+                </div>
+            </div>
+
+            <!-- Formulario de Datos del Paciente -->
+            <div class="col-md-8">
+                <div class="card border-0 shadow-sm rounded-4 bg-white p-4 p-md-5">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger py-2 small mb-3">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        <div id="alerta-paciente-encontrado" class="alert alert-success py-2 small d-none mb-3">
+                            <i class="bi bi-check-circle-fill me-1"></i>
+                            <strong>¡Paciente registrado!</strong> Se han cargado sus datos previos automáticamente.
+                        </div>
+
+                        <!-- RUT y Teléfono -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary">
+                                    <i class="bi bi-card-text me-1"></i>{{ form.rut.label }}
+                                </label>
+                                {{ form.rut }}
+                                <small class="text-muted d-block mt-1">Escribe el RUT y presiona Tab o cambia de campo para autocompletar.</small>
+                                {% if form.rut.errors %}
+                                    <div class="text-danger small mt-1">{{ form.rut.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary">
+                                    <i class="bi bi-telephone me-1"></i>{{ form.telefono.label }}
+                                </label>
+                                {{ form.telefono }}
+                                {% if form.telefono.errors %}
+                                    <div class="text-danger small mt-1">{{ form.telefono.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Nombres y Apellidos -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary">
+                                    {{ form.nombres.label }}
+                                </label>
+                                {{ form.nombres }}
+                                {% if form.nombres.errors %}
+                                    <div class="text-danger small mt-1">{{ form.nombres.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary">
+                                    {{ form.apellidos.label }}
+                                </label>
+                                {{ form.apellidos }}
+                                {% if form.apellidos.errors %}
+                                    <div class="text-danger small mt-1">{{ form.apellidos.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Email y Previsión -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary">
+                                    <i class="bi bi-envelope me-1"></i>{{ form.email.label }}
+                                </label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger small mt-1">{{ form.email.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary">
+                                    <i class="bi bi-hospital me-1"></i>{{ form.prevision.label }}
+                                </label>
+                                {{ form.prevision }}
+                                {% if form.prevision.errors %}
+                                    <div class="text-danger small mt-1">{{ form.prevision.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Antecedentes / Alergias -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary">
+                                <i class="bi bi-exclamation-triangle me-1"></i>{{ form.alergias_antecedentes.label }}
+                            </label>
+                            {{ form.alergias_antecedentes }}
+                            {% if form.alergias_antecedentes.errors %}
+                                <div class="text-danger small mt-1">{{ form.alergias_antecedentes.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Motivo de Consulta -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-dark">
+                                <i class="bi bi-chat-left-dots me-1 text-info"></i>{{ form.motivo_consulta.label }}
+                            </label>
+                            {{ form.motivo_consulta }}
+                            {% if form.motivo_consulta.errors %}
+                                <div class="text-danger small mt-1">{{ form.motivo_consulta.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                            <a href="{% url 'citas:panel_recepcion' %}" class="btn btn-outline-secondary">Cancelar</a>
+                            <button type="submit" class="btn btn-info fw-bold text-dark px-4 shadow-sm">
+                                <i class="bi bi-check-circle-fill me-2"></i>Confirmar y Agendar Cita
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script interactivo para autocompletar paciente mediante el RUT -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const rutInput = document.getElementById('id_rut');
+    const alertFound = document.getElementById('alerta-paciente-encontrado');
+
+    function buscarPacientePorRut() {
+        const rut = rutInput.value.trim();
+        if (rut.length >= 7) {
+            fetch(`/recepcion/api/paciente/buscar/?rut=${encodeURIComponent(rut)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.encontrado) {
+                        document.getElementById('id_nombres').value = data.nombres;
+                        document.getElementById('id_apellidos').value = data.apellidos;
+                        document.getElementById('id_telefono').value = data.telefono;
+                        document.getElementById('id_email').value = data.email || '';
+                        document.getElementById('id_prevision').value = data.prevision;
+                        document.getElementById('id_alergias').value = data.alergias || '';
+                        alertFound.classList.remove('d-none');
+                    } else {
+                        alertFound.classList.add('d-none');
+                    }
+                })
+                .catch(() => {});
+        }
+    }
+
+    rutInput.addEventListener('change', buscarPacientePorRut);
+    rutInput.addEventListener('blur', buscarPacientePorRut);
+});
+</script>
+{% endblock %}
+
