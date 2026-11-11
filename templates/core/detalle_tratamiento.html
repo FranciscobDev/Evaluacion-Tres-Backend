@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ tratamiento.nombre }} | CheckDent{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <a href="{% url 'core:servicios' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>Volver al Catálogo
+            </a>
+            {% if user.is_authenticated and user.is_staff %}
+            <div class="d-flex gap-2">
+                <a href="{% url 'core:editar_tratamiento' tratamiento.slug %}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-pencil-square me-1"></i>Editar Tratamiento
+                </a>
+                <a href="{% url 'core:eliminar_tratamiento' tratamiento.slug %}" class="btn btn-danger btn-sm">
+                    <i class="bi bi-trash me-1"></i>Eliminar / Dar de Baja
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4">
+            <div class="row g-0">
+                <div class="col-md-5 bg-dark d-flex align-items-center justify-content-center p-4 text-center text-white">
+                    {% if tratamiento.imagen %}
+                        <img src="{{ tratamiento.imagen.url }}" alt="{{ tratamiento.nombre }}" class="img-fluid rounded-3 shadow">
+                    {% else %}
+                        <div>
+                            <i class="bi {{ tratamiento.especialidad.icono }} text-info" style="font-size: 5rem;"></i>
+                            <div class="mt-2 badge bg-info text-dark fs-6">{{ tratamiento.codigo }}</div>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-7 p-4 p-md-5">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-info-subtle text-info-emphasis border">{{ tratamiento.especialidad.nombre }}</span>
+                        <span class="badge bg-secondary">{{ tratamiento.get_estado_display }}</span>
+                    </div>
+                    <h1 class="h3 fw-bold text-dark mb-2">{{ tratamiento.nombre }}</h1>
+                    <p class="text-secondary mb-4">{{ tratamiento.descripcion }}</p>
+
+                    <div class="p-3 bg-light rounded-3 border mb-4 small">
+                        <div class="mb-1"><strong><i class="bi bi-clipboard2-check text-primary me-1"></i>Indicaciones previas:</strong> {{ tratamiento.indicaciones_previas }}</div>
+                        <div class="mb-1"><strong><i class="bi bi-clock text-primary me-1"></i>Duración por sesión:</strong> {{ tratamiento.duracion_minutos }} minutos</div>
+                        <div><strong><i class="bi bi-people text-primary me-1"></i>Cupos diarios habilitados:</strong> {{ tratamiento.cupos_diarios }} cupos</div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 border-top pt-3">
+                        <div>
+                            <small class="text-secondary d-block">Arancel Clínico:</small>
+                            <span class="display-6 fw-bold text-primary">${{ tratamiento.arancel }} <small class="fs-6">CLP</small></span>
+                        </div>
+
+                        {% if tratamiento.puede_cotizarse %}
+                        <form method="post" action="{% url 'core:agregar_al_presupuesto' tratamiento.id %}" class="d-flex align-items-center gap-2">
+                            {% csrf_token %}
+                            <input type="number" name="sesiones" value="1" min="1" max="{{ tratamiento.cupos_diarios }}" class="form-control" style="width: 85px;" title="Número de sesiones o piezas">
+                            <button type="submit" class="btn btn-info fw-bold text-dark px-4">
+                                <i class="bi bi-calculator me-1"></i>Agregar al Presupuesto
+                            </button>
+                        </form>
+                        {% else %}
+                            <span class="badge bg-danger p-2">No disponible para cotización</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

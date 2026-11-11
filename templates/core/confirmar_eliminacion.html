@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirmar Baja o Eliminación | CheckDent{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+            <div class="bg-danger text-white p-4 text-center">
+                <i class="bi bi-exclamation-triangle-fill display-4 mb-2"></i>
+                <h3 class="h4 fw-bold mb-0">Confirmar Baja del Tratamiento</h3>
+            </div>
+            <div class="card-body p-4 p-md-5 text-center">
+                <p class="text-secondary">Estás por desactivar o eliminar del catálogo la siguiente prestación odontológica:</p>
+                <div class="p-3 bg-light rounded-3 border mb-4">
+                    <h5 class="fw-bold text-dark mb-1">{{ tratamiento.nombre }}</h5>
+                    <div class="small text-secondary">Código: <code>{{ tratamiento.codigo }}</code> | Arancel: ${{ tratamiento.arancel }} CLP</div>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2">
+                        <button type="submit" name="tipo_baja" value="logica" class="btn btn-warning fw-bold text-dark">
+                            <i class="bi bi-eye-slash me-1"></i>Aplicar Baja Lógica (Desactivar sin destruir registro)
+                        </button>
+                        <button type="submit" name="tipo_baja" value="fisica" class="btn btn-outline-danger">
+                            <i class="bi bi-trash3 me-1"></i>Eliminar Físicamente de la Base de Datos
+                        </button>
+                        <a href="{% url 'core:detalle_tratamiento' tratamiento.slug %}" class="btn btn-secondary mt-2">
+                            Cancelar y Volver
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
