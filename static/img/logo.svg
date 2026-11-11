@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="40" height="40" fill="none">
+  <rect width="100" height="100" rx="24" fill="#0ea5e9"/>
+  <!-- Diente estilizado -->
+  <path d="M50 22C41 22 33 28 32 37C31 46 34 56 36 67C37 73 40 80 43 80C46 80 47 75 48 70C49 65 50 65 52 70C53 75 54 80 57 80C60 80 63 73 64 67C66 56 69 46 68 37C67 28 59 22 50 22Z" fill="#ffffff"/>
+  <!-- Cruz médica interior -->
+  <rect x="46" y="38" width="8" height="20" rx="4" fill="#0ea5e9"/>
+  <rect x="40" y="44" width="20" height="8" rx="4" fill="#0ea5e9"/>
+</svg>
+
