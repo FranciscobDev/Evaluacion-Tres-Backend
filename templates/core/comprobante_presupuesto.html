@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Comprobante de Presupuesto {{ folio }} | CheckDent{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-3 no-print">
+            <span class="badge bg-success px-3 py-2">Sesión vaciada y solicitud generada</span>
+            <div class="d-flex gap-2">
+                <button onclick="window.print()" class="btn btn-outline-dark btn-sm">
+                    <i class="bi bi-printer me-1"></i>Imprimir Comprobante
+                </button>
+                <a href="{% url 'core:servicios' %}" class="btn btn-info btn-sm fw-bold text-dark">
+                    Volver al Catálogo
+                </a>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+            <div class="bg-dark text-white p-4 d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h4 class="fw-bold text-info mb-0">Clínica Odontológica CheckDent</h4>
+                    <small class="text-light opacity-75">Comprobante de Solicitud de Presupuesto Dental</small>
+                </div>
+                <div class="text-md-end">
+                    <div class="fw-bold">Folio: {{ folio }}</div>
+                    <small class="text-light opacity-75">{{ fecha_emision|date:"d/m/Y H:i" }}</small>
+                </div>
+            </div>
+
+            <div class="card-body p-4 p-md-5">
+                <div class="row mb-4 small bg-light p-3 rounded-3 border">
+                    <div class="col-md-6">
+                        <strong>Paciente / Solicitante:</strong> {{ nombre_solicitante }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Teléfono:</strong> {{ telefono_solicitante }}
+                    </div>
+                    {% if observaciones %}
+                    <div class="col-12 mt-2">
+                        <strong>Observaciones:</strong> {{ observaciones }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered align-middle small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Código</th>
+                                <th>Prestación Odontológica</th>
+                                <th>Sesiones</th>
+                                <th>Valor Unitario</th>
+                                <th class="text-end">Total Línea</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items_presupuesto %}
+                            <tr>
+                                <td><code>{{ item.codigo }}</code></td>
+                                <td>{{ item.nombre }} ({{ item.especialidad }})</td>
+                                <td>{{ item.sesiones }}</td>
+                                <td>${{ item.arancel }} CLP</td>
+                                <td class="text-end fw-bold">${{ item.total_linea }} CLP</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="4" class="text-end">Subtotal Clínico:</th>
+                                <td class="text-end">${{ subtotal }} CLP</td>
+                            </tr>
+                            <tr>
+                                <th colspan="4" class="text-end">Insumos de Bioseguridad (10%):</th>
+                                <td class="text-end">${{ insumos_esterilizacion }} CLP</td>
+                            </tr>
+                            <tr class="table-info">
+                                <th colspan="4" class="text-end fs-6">Total Final Presupuestado:</th>
+                                <td class="text-end fw-bold fs-6">${{ total_final }} CLP</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div class="text-center small text-secondary">
+                    Presenta este folio en la Recepción de CheckDent para agendar tus bloques de atención con el especialista.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

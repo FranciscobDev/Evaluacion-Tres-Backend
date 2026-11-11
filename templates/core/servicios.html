@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block title %}Catálogo de Tratamientos Odontológicos | CheckDent{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <div>
+        <span class="badge bg-info text-dark px-3 py-1 fw-bold mb-2">Prestaciones Clínicas</span>
+        <h1 class="h2 fw-bold text-dark mb-1">Catálogo de Tratamientos Odontológicos</h1>
+        <p class="text-secondary small mb-0">
+            Filtra por especialidad, busca por código o nombre y agrega prestaciones a tu Presupuesto Dental.
+        </p>
+    </div>
+    {% if user.is_authenticated and user.is_staff %}
+    <div>
+        <a href="{% url 'core:crear_tratamiento' %}" class="btn btn-success fw-bold shadow-sm">
+            <i class="bi bi-plus-circle me-1"></i>Nuevo Tratamiento (CRUD)
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Barra de Búsqueda Multi-Campo (Q), Filtro por Especialidad y Ordenamiento -->
+<div class="card border-0 shadow-sm rounded-4 p-3 p-md-4 mb-4 bg-white">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label small fw-semibold text-secondary mb-1">
+                <i class="bi bi-search me-1"></i>Buscar por Nombre, Código o Descripción:
+            </label>
+            <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Ej. TRT-ORT, Brackets, Conducto...">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small fw-semibold text-secondary mb-1">
+                <i class="bi bi-funnel me-1"></i>Especialidad Odontológica:
+            </label>
+            <select name="especialidad" class="form-select">
+                <option value="">Todas las Especialidades</option>
+                {% for esp in especialidades %}
+                    <option value="{{ esp.id }}" {% if especialidad_actual == esp.id|stringformat:"s" %}selected{% endif %}>
+                        {{ esp.nombre }} ({{ esp.codigo_area }})
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small fw-semibold text-secondary mb-1">
+                <i class="bi bi-sort-down me-1"></i>Ordenar por:
+            </label>
+            <select name="orden" class="form-select">
+                <option value="nombre" {% if orden_actual == 'nombre' %}selected{% endif %}>Nombre (A - Z)</option>
+                <option value="arancel_asc" {% if orden_actual == 'arancel_asc' %}selected{% endif %}>Menor Arancel ($)</option>
+                <option value="arancel_desc" {% if orden_actual == 'arancel_desc' %}selected{% endif %}>Mayor Arancel ($)</option>
+                <option value="recientes" {% if orden_actual == 'recientes' %}selected{% endif %}>Más Recientes</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-grid">
+            <div class="btn-group">
+                <button type="submit" class="btn btn-dark fw-semibold">Filtrar</button>
+                <a href="{% url 'core:servicios' %}" class="btn btn-outline-secondary" title="Limpiar filtros">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3 small text-secondary">
+    <span>Mostrando <strong>{{ page_obj|length }}</strong> de <strong>{{ total_resultados }}</strong> tratamiento(s) encontrado(s).</span>
+    {% if user.is_staff %}
+        <div>
+            {% if mostrar_inactivos %}
+                <a href="{% url 'core:servicios' %}" class="text-decoration-none">Ocultar dados de baja</a>
+            {% else %}
+                <a href="?inactivos=1" class="text-decoration-none">Ver también tratamientos con baja lógica</a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<!-- Grilla de Tarjetas Bootstrap Cards -->
+<div class="row g-4 mb-4">
+    {% for trat in page_obj %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden bg-white d-flex flex-column">
+            {% if trat.imagen %}
+                <img src="{{ trat.imagen.url }}" alt="{{ trat.nombre }}" class="tratamiento-img-cover">
+            {% else %}
+                <div class="tratamiento-img-cover d-flex flex-column align-items-center justify-content-center text-white p-3 text-center">
+                    <i class="bi {{ trat.especialidad.icono }} display-4 text-info mb-1"></i>
+                    <span class="badge bg-dark bg-opacity-50 border border-secondary">{{ trat.codigo }}</span>
+                </div>
+            {% endif %}
+
+            <div class="card-body p-4 d-flex flex-column flex-grow-1">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">
+                        {{ trat.especialidad.nombre }}
+                    </span>
+                    {% if not trat.vigente %}
+                        <span class="badge bg-dark">Baja Lógica</span>
+                    {% elif trat.estado == 'disponible' %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle">Disponible</span>
+                    {% elif trat.estado == 'en_curso' %}
+                        <span class="badge bg-warning-subtle text-warning-emphasis border">Alta Demanda</span>
+                    {% else %}
+                        <span class="badge bg-danger-subtle text-danger border">Suspendido</span>
+                    {% endif %}
+                </div>
+
+                <h5 class="fw-bold text-dark mb-1">{{ trat.nombre }}</h5>
+                <small class="text-muted d-block mb-2">Código: <code>{{ trat.codigo }}</code> | Duración: {{ trat.duracion_minutos }} min</small>
+                <p class="text-secondary small mb-3 flex-grow-1">{{ trat.descripcion|truncatewords:22 }}</p>
+
+                <div class="p-2 bg-light rounded-3 border mb-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-secondary d-block">Arancel por sesión:</small>
+                        <span class="fw-bold text-primary fs-5">${{ trat.arancel }} CLP</span>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-secondary d-block">Cupos diarios:</small>
+                        <span class="badge bg-secondary">{{ trat.cupos_diarios }} cupo(s)</span>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-auto">
+                    <a href="{% url 'core:detalle_tratamiento' trat.slug %}" class="btn btn-outline-dark btn-sm flex-grow-1">
+                        <i class="bi bi-eye me-1"></i>Detalle
+                    </a>
+                    {% if trat.puede_cotizarse %}
+                    <form method="post" action="{% url 'core:agregar_al_presupuesto' trat.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="sesiones" value="1">
+                        <button type="submit" class="btn btn-info btn-sm fw-bold text-dark">
+                            <i class="bi bi-plus-circle me-1"></i>Cotizar
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+
+                {% if user.is_authenticated and user.is_staff %}
+                <div class="border-top pt-2 mt-3 d-flex justify-content-end gap-2">
+                    <a href="{% url 'core:editar_tratamiento' trat.slug %}" class="btn btn-outline-primary btn-sm py-0">
+                        <i class="bi bi-pencil-square"></i> Editar
+                    </a>
+                    <a href="{% url 'core:eliminar_tratamiento' trat.slug %}" class="btn btn-outline-danger btn-sm py-0">
+                        <i class="bi bi-trash"></i> Baja / Eliminar
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5 bg-white rounded-4 shadow-sm border">
+        <i class="bi bi-search display-4 text-muted d-block mb-2"></i>
+        <h5 class="fw-bold">No se encontraron tratamientos odontológicos</h5>
+        <p class="text-secondary small mb-3">Intenta limpiar los filtros de búsqueda o registra una nueva prestación.</p>
+        <a href="{% url 'core:servicios' %}" class="btn btn-outline-primary btn-sm">Ver todos los tratamientos</a>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Controles de Paginación (Paginator) -->
+{% if page_obj.has_other_pages %}
+<nav aria-label="Paginación de tratamientos" class="mb-5">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ query }}&especialidad={{ especialidad_actual }}&orden={{ orden_actual }}">
+                    &laquo; Anterior
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">&laquo; Anterior</span></li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}&q={{ query }}&especialidad={{ especialidad_actual }}&orden={{ orden_actual }}">
+                    {{ num }}
+                </a>
+            </li>
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ query }}&especialidad={{ especialidad_actual }}&orden={{ orden_actual }}">
+                    Siguiente &raquo;
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Siguiente &raquo;</span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
+

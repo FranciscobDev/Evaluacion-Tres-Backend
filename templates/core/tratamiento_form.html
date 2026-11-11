@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo_pagina }} | CheckDent{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+            <div class="bg-dark text-white p-4">
+                <h2 class="h4 fw-bold mb-1">
+                    <i class="bi bi-journal-plus text-info me-2"></i>{{ titulo_pagina }}
+                </h2>
+                <p class="text-light opacity-75 small mb-0">
+                    Formulario CRUD administrativo con soporte multimedia y validaciones de negocio.
+                </p>
+            </div>
+
+            <div class="card-body p-4 p-md-5">
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger py-2 small mb-3">{{ form.non_field_errors }}</div>
+                    {% endif %}
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-secondary">{{ form.especialidad.label }}</label>
+                            {{ form.especialidad }}
+                            {% if form.especialidad.errors %}<div class="text-danger small mt-1">{{ form.especialidad.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-secondary">{{ form.codigo.label }}</label>
+                            {{ form.codigo }}
+                            {% if form.codigo.errors %}<div class="text-danger small mt-1">{{ form.codigo.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-secondary">{{ form.nombre.label }}</label>
+                        {{ form.nombre }}
+                        {% if form.nombre.errors %}<div class="text-danger small mt-1">{{ form.nombre.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-secondary">{{ form.descripcion.label }}</label>
+                        {{ form.descripcion }}
+                        {% if form.descripcion.errors %}<div class="text-danger small mt-1">{{ form.descripcion.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-secondary">{{ form.indicaciones_previas.label }}</label>
+                        {{ form.indicaciones_previas }}
+                        {% if form.indicaciones_previas.errors %}<div class="text-danger small mt-1">{{ form.indicaciones_previas.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary">{{ form.arancel.label }}</label>
+                            {{ form.arancel }}
+                            {% if form.arancel.errors %}<div class="text-danger small mt-1">{{ form.arancel.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary">{{ form.duracion_minutos.label }}</label>
+                            {{ form.duracion_minutos }}
+                            {% if form.duracion_minutos.errors %}<div class="text-danger small mt-1">{{ form.duracion_minutos.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-secondary">{{ form.cupos_diarios.label }}</label>
+                            {{ form.cupos_diarios }}
+                            {% if form.cupos_diarios.errors %}<div class="text-danger small mt-1">{{ form.cupos_diarios.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4 align-items-center">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-secondary">{{ form.estado.label }}</label>
+                            {{ form.estado }}
+                            {% if form.estado.errors %}<div class="text-danger small mt-1">{{ form.estado.errors }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-secondary">{{ form.imagen.label }}</label>
+                            {{ form.imagen }}
+                            {% if form.imagen.errors %}<div class="text-danger small mt-1">{{ form.imagen.errors }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-check form-switch mb-4">
+                        {{ form.vigente }}
+                        <label class="form-check-label fw-semibold text-secondary">{{ form.vigente.label }}</label>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                        <a href="{% url 'core:servicios' %}" class="btn btn-outline-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-success fw-bold px-4">
+                            <i class="bi bi-save me-1"></i>Guardar Tratamiento
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
