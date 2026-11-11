@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Mi Perfil | CheckDent{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden bg-white mb-4">
+            <div class="bg-dark text-white p-4 p-md-5">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle bg-info bg-opacity-25 p-3">
+                        <i class="bi bi-person-badge fs-1 text-info"></i>
+                    </div>
+                    <div>
+                        <h2 class="h3 fw-bold mb-1">{{ usuario.get_full_name|default:usuario.username }}</h2>
+                        <span class="badge bg-secondary">@{{ usuario.username }}</span>
+                        <span class="badge bg-info text-dark fw-bold ms-1">{{ usuario.perfil.get_rol_display }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-4 p-md-5">
+                <h5 class="fw-bold mb-3 text-secondary">
+                    <i class="bi bi-person-lines-fill me-2 text-info"></i>Ficha de Usuario Institucional
+                </h5>
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered align-middle">
+                        <tbody>
+                            <tr>
+                                <th class="bg-light text-secondary w-35">Nombre Completo:</th>
+                                <td class="fw-semibold">{{ usuario.get_full_name|default:"No especificado" }}</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light text-secondary">RUT / Identificación:</th>
+                                <td>{{ usuario.perfil.rut|default:"No registrado" }}</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light text-secondary">Correo Electrónico:</th>
+                                <td>{{ usuario.email|default:"No registrado" }}</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light text-secondary">Teléfono de Contacto:</th>
+                                <td>{{ usuario.perfil.telefono|default:"No registrado" }}</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light text-secondary">Rol en CheckDent:</th>
+                                <td><span class="fw-bold text-uppercase">{{ usuario.perfil.get_rol_display }}</span></td>
+                            </tr>
+                            {% if usuario.perfil.es_dentista %}
+                            <tr>
+                                <th class="bg-light text-secondary">Especialidad Odontológica:</th>
+                                <td class="fw-bold text-primary">{{ usuario.perfil.get_especialidad_display }}</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light text-secondary">Registro Superintendencia de Salud:</th>
+                                <td><code>{{ usuario.perfil.registro_salud|default:"Pendiente" }}</code></td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2">
+                    {% if usuario.perfil.es_dentista %}
+                        <a href="{% url 'disponibilidad:mi_agenda' %}" class="btn btn-warning fw-bold text-dark">
+                            <i class="bi bi-calendar-check me-1"></i>Ir a Mi Agenda
+                        </a>
+                    {% elif usuario.perfil.es_recepcionista %}
+                        <a href="{% url 'citas:panel_recepcion' %}" class="btn btn-info fw-bold text-dark">
+                            <i class="bi bi-clipboard2-pulse me-1"></i>Ir a Panel de Recepción
+                        </a>
+                    {% endif %}
+                    <a href="{% url 'core:servicios' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-grid-1x2 me-1"></i>Ver Catálogo de Tratamientos
+                    </a>
+                    <a href="{% url 'core:inicio' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Volver al Inicio
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
