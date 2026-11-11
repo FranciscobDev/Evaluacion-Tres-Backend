@@ -1,0 +1,86 @@
+/* ==========================================================================
+   CheckDent - Estilos Personalizados del Sistema Odontológico
+   ========================================================================== */
+
+:root {
+    --dent-primary: #0d6efd;
+    --dent-info: #0dcaf0;
+    --dent-dark: #0f172a;
+    --dent-light-bg: #f8fafc;
+    --dent-border: #e2e8f0;
+}
+
+body {
+    background-color: var(--dent-light-bg);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #1e293b;
+}
+
+.navbar-checkdent {
+    background-color: var(--dent-dark) !important;
+    border-bottom: 2px solid #1e293b;
+}
+
+.navbar-brand-checkdent {
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    transition: transform 0.2s ease-in-out;
+}
+
+.navbar-brand-checkdent:hover {
+    transform: scale(1.02);
+}
+
+.nav-link {
+    font-weight: 500;
+    transition: color 0.15s ease-in-out;
+}
+
+.card {
+    transition: box-shadow 0.2s ease-in-out, transform 0.15s ease-in-out;
+    border-color: var(--dent-border);
+}
+
+.card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05) !important;
+}
+
+.card-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--dent-border);
+}
+
+.tratamiento-img-cover {
+    height: 190px;
+    object-fit: cover;
+    width: 100%;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+.table thead th {
+    font-size: 0.825rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+    color: #64748b;
+    border-bottom-width: 1px;
+}
+
+.footer-dent {
+    background-color: var(--dent-dark);
+    border-top: 1px solid #1e293b;
+}
+
+@media print {
+    nav, footer, .btn, .dropdown, .alert, .no-print {
+        display: none !important;
+    }
+    body {
+        background-color: #ffffff !important;
+    }
+    .card {
+        border: 1px solid #000000 !important;
+        box-shadow: none !important;
+    }
+}
+
